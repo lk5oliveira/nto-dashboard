@@ -161,8 +161,8 @@ $user_groups_json = json_encode($user_groups);
 
     <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
 
-        <!-- Conditional Alerts Section - Side by side on desktop -->
-        <section id="alerts" class="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4 mb-6 relative">
+        <!-- Conditional Alerts Section - Side by side on desktop - Gold Members Only -->
+        <section id="alerts" class="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4 mb-6 relative" data-require-groups="4383" style="display: none;">
             <!-- Loading indicator for live class check -->
             <div id="live-class-loader" class="absolute -top-8 right-0 flex items-center gap-2 text-dark-green opacity-60" style="display: none;">
                 <span class="material-icons-outlined text-sm animate-spin">refresh</span>
@@ -191,7 +191,7 @@ $user_groups_json = json_encode($user_groups);
                         <p class="text-xs lg:text-sm text-gray-600">Share wins, learnings & changes</p>
                     </div>
                 </div>
-                <button class="w-full md:w-auto bg-dark-green text-white font-bold py-2 px-6 rounded-full hover:bg-dark-green-light transition-all flex items-center justify-center gap-2">
+                <button class="w-full md:w-auto bg-dark-green text-white font-bold py-2 px-6 rounded-full hover:bg-sand transition-all flex items-center justify-center gap-2">
                     Check In Now <span class="material-icons-outlined text-lg">arrow_forward</span>
                 </button>
             </div>
@@ -255,8 +255,46 @@ $user_groups_json = json_encode($user_groups);
                     </div>
                 </section>
 
-                <!-- Main Navigation Grid - Always Visible -->
-                <section>
+                <!-- Builder Brand Programme Section - For BBP and BBP VIP members -->
+                <section id="bbp-section" class="bg-white rounded-xl p-5 lg:p-8 shadow-md" data-require-groups="347879,348042" style="display: none;">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="material-icons-outlined text-3xl lg:text-4xl text-dark-green">rocket_launch</span>
+                        <h2 class="text-xl lg:text-2xl font-bold text-dark-green">Builder Brand Programme</h2>
+                    </div>
+                    <div class="flex flex-wrap gap-4">
+                        <a href="#" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md flex-1 min-w-[calc(50%-0.5rem)] md:min-w-[calc(33.333%-0.67rem)]">
+                            <div class="flex flex-col items-center text-center text-white">
+                                <span class="material-icons-outlined text-4xl lg:text-5xl mb-3">groups</span>
+                                <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">BBP Community</h3>
+                                <p class="text-xs opacity-90">Connect with BBP members</p>
+                            </div>
+                        </a>
+                        <a href="#" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md flex-1 min-w-[calc(50%-0.5rem)] md:min-w-[calc(33.333%-0.67rem)]" data-require-groups="348042" style="display: none;">
+                            <div class="flex flex-col items-center text-center text-white">
+                                <span class="material-icons-outlined text-4xl lg:text-5xl mb-3">workspace_premium</span>
+                                <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">VIP Community</h3>
+                                <p class="text-xs opacity-90">Exclusive VIP access</p>
+                            </div>
+                        </a>
+                        <a href="#" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md flex-1 min-w-[calc(50%-0.5rem)] md:min-w-[calc(33.333%-0.67rem)]">
+                            <div class="flex flex-col items-center text-center text-white">
+                                <span class="material-icons-outlined text-4xl lg:text-5xl mb-3">menu_book</span>
+                                <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">Course Materials</h3>
+                                <p class="text-xs opacity-90">Lessons & resources</p>
+                            </div>
+                        </a>
+                        <a href="#" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md flex-1 min-w-[calc(50%-0.5rem)] md:min-w-[calc(33.333%-0.67rem)]">
+                            <div class="flex flex-col items-center text-center text-white">
+                                <span class="material-icons-outlined text-4xl lg:text-5xl mb-3">calendar_month</span>
+                                <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">Schedule</h3>
+                                <p class="text-xs opacity-90">View cohort sessions</p>
+                            </div>
+                        </a>
+                    </div>
+                </section>
+
+                <!-- Main Navigation Grid - Gold Members Only -->
+                <section data-require-groups="4383" style="display: none;">
                     <h2 class="text-xl lg:text-2xl font-bold text-dark-green mb-5 font-montserrat">Your Dashboard</h2>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4 lg:gap-5">
 
@@ -308,10 +346,52 @@ $user_groups_json = json_encode($user_groups);
                     </div>
                 </section>
 
+                <!-- Upgrade to Gold - Non-Members -->
+                <section data-exclude-groups="4383" style="display: none;">
+                    <div class="bg-gradient-to-br from-dark-green to-dark-green-light rounded-xl p-8 lg:p-12 shadow-xl text-white text-center relative overflow-hidden">
+                        <!-- Decorative background pattern -->
+                        <div class="absolute inset-0 opacity-10">
+                            <div class="absolute top-0 left-0 w-32 h-32 bg-white rounded-full -translate-x-16 -translate-y-16"></div>
+                            <div class="absolute bottom-0 right-0 w-40 h-40 bg-white rounded-full translate-x-20 translate-y-20"></div>
+                        </div>
+
+                        <div class="relative z-10">
+                            <span class="material-icons-outlined text-6xl lg:text-7xl mb-4 inline-block">workspace_premium</span>
+                            <h2 class="text-2xl lg:text-3xl font-bold font-montserrat mb-3" style="color: #ffffff;">
+                                Unlock <span style="background: linear-gradient(135deg, #ffd700 0%, #ffed4e 25%, #d4af37 50%, #f2c94c 75%, #ffd700 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: brightness(1.1);">Gold Membership</span>
+                            </h2>
+                            <p class="text-base lg:text-lg mb-6 opacity-90">Get access to exclusive resources, live classes, and more</p>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6 justify-items-center">
+                                <div class="flex items-center justify-center md:justify-start gap-2">
+                                    <span class="material-icons-outlined text-2xl flex-shrink-0">check_circle</span>
+                                    <span class="text-sm">Business Programme & Courses</span>
+                                </div>
+                                <div class="flex items-center justify-center md:justify-start gap-2">
+                                    <span class="material-icons-outlined text-2xl flex-shrink-0">check_circle</span>
+                                    <span class="text-sm">Monthly Live Classes</span>
+                                </div>
+                                <div class="flex items-center justify-center md:justify-start gap-2">
+                                    <span class="material-icons-outlined text-2xl flex-shrink-0">check_circle</span>
+                                    <span class="text-sm">Nail Technique Tutorials</span>
+                                </div>
+                                <div class="flex items-center justify-center md:justify-start gap-2">
+                                    <span class="material-icons-outlined text-2xl flex-shrink-0">check_circle</span>
+                                    <span class="text-sm">Community Access</span>
+                                </div>
+                            </div>
+
+                            <a href="#" class="inline-flex items-center gap-2 bg-white text-dark-green font-bold py-3 px-8 rounded-full hover:bg-sand transition-all shadow-lg">
+                                Become a Gold Member <span class="material-icons-outlined">arrow_forward</span>
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
             </div>
 
-            <!-- Right Sidebar (1/3 width on desktop) -->
-            <div class="lg:col-span-1 space-y-6">
+            <!-- Right Sidebar (1/3 width on desktop) - Gold Members Only -->
+            <div class="lg:col-span-1 space-y-6" data-require-groups="4383" style="display: none;">
 
                 <!-- Quick Start -->
                 <section>
@@ -333,9 +413,15 @@ $user_groups_json = json_encode($user_groups);
                             <span class="material-icons-outlined text-2xl text-dark-green">forum</span>
                             <h2 class="text-lg lg:text-xl font-bold text-dark-green font-montserrat">Community</h2>
                         </div>
-                        <a href="#" class="text-dark-green font-semibold hover:underline text-xs">View All</a>
                     </div>
-                    <div id="community-feed" class="space-y-3">
+
+                    <!-- Tabs for multiple feeds -->
+                    <div id="community-tabs" class="flex gap-2 mb-3 overflow-x-auto pb-2" style="display: none;">
+                        <!-- Tabs will be generated dynamically -->
+                    </div>
+
+                    <!-- Feed containers -->
+                    <div id="community-feeds">
                         <!-- Loading State -->
                         <div class="bg-white rounded-xl p-6 shadow-md text-center">
                             <span class="material-icons-outlined text-4xl text-gray-400 mb-2 animate-spin">refresh</span>
@@ -352,15 +438,39 @@ $user_groups_json = json_encode($user_groups);
 </div>
 
 <script>
-async function loadCommunityFeed() {
+// Map LearnDash groups to BuddyBoss groups
+const userGroups = <?php echo $user_groups_json; ?>;
+const adminHasFullAccess = <?php echo (current_user_can('administrator') && true) ? 'true' : 'false'; ?>; // Change the second 'true' to 'false' to disable
+const communityFeeds = [];
+
+// Check which communities user has access to
+if (adminHasFullAccess || userGroups.includes(4383)) { // Gold Members
+    communityFeeds.push({ id: null, name: 'Gold Members', label: 'Gold' });
+}
+if (adminHasFullAccess || userGroups.includes(348042)) { // BBP VIP
+    communityFeeds.push({ id: 68, name: 'BBP VIP', label: 'BBP VIP' });
+}
+if (adminHasFullAccess || userGroups.includes(347879)) { // BBP
+    communityFeeds.push({ id: 67, name: 'BBP', label: 'BBP' });
+}
+
+let activeFeedIndex = 0;
+
+async function loadCommunityFeed(groupId = null, containerId = 'community-feeds') {
+    const feedContainer = document.getElementById(containerId);
+
     try {
-        const response = await fetch('https://thenailtech.org/wp-json/buddyboss/v1/activity?per_page=20');
+        // Build API URL based on group
+        let apiUrl = 'https://thenailtech.org/wp-json/buddyboss/v1/activity?per_page=20';
+        if (groupId) {
+            apiUrl += `&group_id=${groupId}`;
+        }
+
+        const response = await fetch(apiUrl);
         const activities = await response.json();
 
-        const feedContainer = document.getElementById('community-feed');
-
         if (!activities || activities.length === 0) {
-            feedContainer.innerHTML = '<p class="text-center text-gray-500 text-sm">No recent activity</p>';
+            feedContainer.innerHTML = '<p class="text-center text-gray-500 text-sm py-6">No recent activity</p>';
             return;
         }
 
@@ -368,11 +478,11 @@ async function loadCommunityFeed() {
         const posts = activities.filter(activity => activity.type === 'activity_update').slice(0, 5);
 
         if (posts.length === 0) {
-            feedContainer.innerHTML = '<p class="text-center text-gray-500 text-sm">No recent posts</p>';
+            feedContainer.innerHTML = '<p class="text-center text-gray-500 text-sm py-6">No recent posts</p>';
             return;
         }
 
-        feedContainer.innerHTML = posts.map(activity => {
+        feedContainer.innerHTML = `<div class="space-y-3">${posts.map(activity => {
             const date = new Date(activity.date);
             const timeAgo = getTimeAgo(date);
 
@@ -397,17 +507,74 @@ async function loadCommunityFeed() {
                     </a>
                 </div>
             `;
-        }).join('');
+        }).join('')}</div>`;
 
     } catch (error) {
         console.error('Error loading community feed:', error);
-        document.getElementById('community-feed').innerHTML = `
+        feedContainer.innerHTML = `
             <div class="bg-white rounded-xl p-6 shadow-md text-center">
                 <span class="material-icons-outlined text-4xl text-gray-400 mb-2">error_outline</span>
                 <p class="text-gray-600 text-sm">Unable to load updates</p>
             </div>
         `;
     }
+}
+
+function switchFeed(index) {
+    activeFeedIndex = index;
+    const feed = communityFeeds[index];
+    const feedContainer = document.getElementById('community-feeds');
+
+    // Update tab styles
+    document.querySelectorAll('[data-tab]').forEach((tab, i) => {
+        if (i === index) {
+            tab.className = 'px-4 py-2 rounded-lg font-semibold text-sm transition-all bg-dark-green text-white';
+        } else {
+            tab.className = 'px-4 py-2 rounded-lg font-semibold text-sm transition-all bg-white text-dark-green border-2 border-sand hover:border-dark-green';
+        }
+    });
+
+    // Show loading state
+    feedContainer.innerHTML = `
+        <div class="bg-white rounded-xl p-6 shadow-md text-center">
+            <span class="material-icons-outlined text-4xl text-gray-400 mb-2 animate-spin">refresh</span>
+            <p class="text-gray-600 text-sm">Loading ${feed.name}...</p>
+        </div>
+    `;
+
+    // Load the feed
+    loadCommunityFeed(feed.id);
+}
+
+function initializeCommunityFeeds() {
+    if (communityFeeds.length === 0) {
+        // No feeds available
+        document.getElementById('community-feeds').innerHTML = `
+            <div class="bg-white rounded-xl p-6 shadow-md text-center">
+                <span class="material-icons-outlined text-4xl text-gray-400 mb-2">info</span>
+                <p class="text-gray-600 text-sm">No community access</p>
+            </div>
+        `;
+        return;
+    }
+
+    // If multiple feeds, show tabs
+    if (communityFeeds.length > 1) {
+        const tabsContainer = document.getElementById('community-tabs');
+        tabsContainer.style.display = 'flex';
+        tabsContainer.innerHTML = communityFeeds.map((feed, index) => `
+            <button
+                data-tab="${index}"
+                onclick="switchFeed(${index})"
+                class="${index === 0 ? 'px-4 py-2 rounded-lg font-semibold text-sm transition-all bg-dark-green text-white' : 'px-4 py-2 rounded-lg font-semibold text-sm transition-all bg-white text-dark-green border-2 border-sand hover:border-dark-green'}"
+            >
+                ${feed.label}
+            </button>
+        `).join('');
+    }
+
+    // Load first feed
+    loadCommunityFeed(communityFeeds[0].id);
 }
 
 function getTimeAgo(date) {
@@ -565,30 +732,52 @@ async function checkLiveClass() {
  * 1. Add data-require-groups="123" attribute (replace 123 with actual group ID)
  * 2. Add style="display: none;" to hide by default
  * 3. For multiple groups (OR logic), use: data-require-groups="123,456,789"
+ * 4. To show content ONLY to non-members, use: data-exclude-groups="123"
  *
  * Example:
  * <div data-require-groups="123,456" style="display: none;">
  *   Content only visible to users in group 123 OR 456
  * </div>
+ * <div data-exclude-groups="123" style="display: none;">
+ *   Content only visible to users NOT in group 123
+ * </div>
  */
 function checkGroupAccess() {
-    // Get user's group IDs from PHP
-    const userGroups = <?php echo $user_groups_json; ?>;
+    // Note: userGroups and adminHasFullAccess are already defined globally above
 
     // Find all elements with data-require-groups attribute
-    const conditionalElements = document.querySelectorAll('[data-require-groups]');
+    const requireElements = document.querySelectorAll('[data-require-groups]');
 
-    conditionalElements.forEach(element => {
+    requireElements.forEach(element => {
         // Get required group IDs from data attribute (comma-separated)
         const requiredGroups = element.getAttribute('data-require-groups')
             .split(',')
             .map(id => parseInt(id.trim()))
             .filter(id => !isNaN(id));
 
-        // Check if user is in ANY of the required groups
-        const hasAccess = requiredGroups.some(groupId => userGroups.includes(groupId));
+        // Check if user is in ANY of the required groups OR is admin with bypass enabled
+        const hasAccess = adminHasFullAccess || requiredGroups.some(groupId => userGroups.includes(groupId));
 
         // Show element if user has access
+        if (hasAccess) {
+            element.style.display = 'block';
+        }
+    });
+
+    // Find all elements with data-exclude-groups attribute
+    const excludeElements = document.querySelectorAll('[data-exclude-groups]');
+
+    excludeElements.forEach(element => {
+        // Get excluded group IDs from data attribute (comma-separated)
+        const excludedGroups = element.getAttribute('data-exclude-groups')
+            .split(',')
+            .map(id => parseInt(id.trim()))
+            .filter(id => !isNaN(id));
+
+        // Check if user is NOT in ANY of the excluded groups (admins never see excluded content when bypass is on)
+        const hasAccess = adminHasFullAccess ? false : !excludedGroups.some(groupId => userGroups.includes(groupId));
+
+        // Show element if user is not in excluded groups
         if (hasAccess) {
             element.style.display = 'block';
         }
@@ -596,7 +785,7 @@ function checkGroupAccess() {
 }
 
 // Load on page load
-loadCommunityFeed();
+initializeCommunityFeeds();
 checkMondayUK();
 checkLiveClass();
 checkGroupAccess();
