@@ -161,15 +161,15 @@ $user_groups_json = json_encode($user_groups);
 
     <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
 
-        <!-- Conditional Alerts Section - Side by side on desktop - Gold Members Only -->
-        <section id="alerts" class="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4 mb-6 relative" data-require-groups="4383" style="display: none;">
+        <!-- Conditional Alerts Section - Flexible layout - Gold Members Only -->
+        <section id="alerts" class="flex flex-col md:flex-row gap-3 lg:gap-4 mb-6 relative" data-require-groups="4383" style="display: none;">
             <!-- Loading indicator for live class check -->
             <div id="live-class-loader" class="absolute -top-8 right-0 flex items-center gap-2 text-dark-green opacity-60" style="display: none;">
                 <span class="material-icons-outlined text-sm animate-spin">refresh</span>
                 <span class="text-xs">Checking for live events...</span>
             </div>
             <!-- Live Class Alert - Conditional -->
-            <div id="live-class-alert" class="bg-gradient-to-r from-dark-green to-dark-green-light rounded-xl p-4 lg:p-6 shadow-lg text-white" style="display: none;">
+            <div id="live-class-alert" class="flex-1 bg-gradient-to-r from-dark-green to-dark-green-light rounded-xl p-4 lg:p-6 shadow-lg text-white" style="display: none;">
                 <div class="flex items-center gap-3 mb-3 lg:mb-4">
                     <span class="material-icons-outlined text-4xl lg:text-5xl flex-shrink-0">live_tv</span>
                     <div class="flex-1">
@@ -183,7 +183,7 @@ $user_groups_json = json_encode($user_groups);
             </div>
 
             <!-- Monday Check-in - Conditional -->
-            <div id="monday-checkin" class="bg-white rounded-xl p-4 lg:p-6 shadow-md border-2 border-sand" style="display: none;">
+            <div id="monday-checkin" class="flex-1 bg-white rounded-xl p-4 lg:p-6 shadow-md border-2 border-sand" style="display: none;">
                 <div class="flex items-center gap-3 mb-3 lg:mb-4">
                     <span class="material-icons-outlined text-4xl lg:text-5xl text-dark-green flex-shrink-0">edit_note</span>
                     <div class="flex-1">
@@ -222,6 +222,121 @@ $user_groups_json = json_encode($user_groups);
 
             <!-- Left Column (2/3 width on desktop) -->
             <div class="lg:col-span-2 space-y-6">
+
+                <!-- Main Navigation Grid - Gold Members Only -->
+                <section data-require-groups="4383" style="display: none;">
+                    <h2 class="text-xl lg:text-2xl font-bold text-dark-green mb-5 font-montserrat">Your Dashboard</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 lg:gap-5">
+
+                        <?php
+                        // Check if plugin function exists and get tutorial
+                        $tutorial = null;
+                        if (function_exists('nto_get_daily_tutorial')) {
+                            $tutorial = nto_get_daily_tutorial();
+                        }
+
+                        if ($tutorial) :
+                        ?>
+                        <!-- Tutorial of the Day - Featured Card -->
+                        <a href="<?php echo esc_url($tutorial['url']); ?>" class="bg-gradient-to-br from-dark-green to-dark-green-light rounded-xl p-5 lg:p-6 shadow-xl hover:shadow-2xl transition-all group border-2 border-transparent hover:border-sand col-span-2 md:col-span-3 relative overflow-hidden">
+                            <!-- Animated background pattern -->
+                            <div class="absolute inset-0 opacity-5">
+                                <div class="absolute top-0 right-0 w-32 h-32 bg-white rounded-full translate-x-16 -translate-y-16"></div>
+                                <div class="absolute bottom-0 left-0 w-24 h-24 bg-white rounded-full -translate-x-12 translate-y-12"></div>
+                            </div>
+
+                            <div class="relative z-10 flex flex-col md:flex-row gap-4 items-start md:items-center">
+                                <div class="flex items-center gap-3 flex-1">
+                                    <?php if ($tutorial['thumbnail']) : ?>
+                                        <img src="<?php echo esc_url($tutorial['thumbnail']); ?>"
+                                             alt="<?php echo esc_attr($tutorial['title']); ?>"
+                                             class="w-16 h-16 lg:w-20 lg:h-20 object-cover rounded-xl shadow-lg flex-shrink-0 group-hover:scale-105 transition-transform ring-2 ring-white/50" />
+                                    <?php else : ?>
+                                        <div class="w-16 h-16 lg:w-20 lg:h-20 bg-dark-green-light rounded-xl shadow-lg flex-shrink-0 flex items-center justify-center group-hover:scale-105 transition-transform ring-2 ring-white/50">
+                                            <span class="material-icons-outlined text-4xl text-white">video_library</span>
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="material-icons-outlined text-xl text-white">stars</span>
+                                            <p class="text-xs lg:text-sm font-bold text-white opacity-90 uppercase tracking-wide">Tutorial of the Day</p>
+                                        </div>
+                                        <h3 class="font-bold text-sm lg:text-base font-montserrat mb-1 line-clamp-2" style="color: #ffffff !important;">
+                                            <?php echo esc_html($tutorial['title']); ?>
+                                        </h3>
+                                        <?php if ($tutorial['course_title']) : ?>
+                                            <p class="text-xs text-white/80">
+                                                <span class="material-icons-outlined text-xs align-middle">folder</span>
+                                                <?php echo esc_html($tutorial['course_title']); ?>
+                                            </p>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+
+                                <div class="inline-flex items-center gap-2 bg-white text-dark-green font-bold py-2 px-6 rounded-full hover:bg-sand transition-all shadow-lg group-hover:scale-105">
+                                    Watch Now <span class="material-icons-outlined text-lg">arrow_forward</span>
+                                </div>
+                            </div>
+                        </a>
+                        <?php endif; ?>
+
+                        <!-- Business Programme -->
+                        <a href="#" class="bg-white rounded-xl p-5 lg:p-6 shadow-md hover:shadow-xl transition-all group border-2 border-transparent hover:border-dark-green">
+                            <div class="flex flex-col">
+                                <span class="material-icons-outlined text-4xl lg:text-5xl text-dark-green mb-3 group-hover:scale-110 transition-transform">business_center</span>
+                                <h3 class="font-bold text-sm lg:text-base mb-2 text-dark-green font-montserrat">Business Programme</h3>
+                                <p class="text-gray-600 text-xs lg:text-sm">Build & grow your business</p>
+                            </div>
+                        </a>
+
+                        <!-- Nail Tutorials -->
+                        <a href="#" class="bg-white rounded-xl p-5 lg:p-6 shadow-md hover:shadow-xl transition-all group border-2 border-transparent hover:border-dark-green">
+                            <div class="flex flex-col">
+                                <span class="material-icons-outlined text-4xl lg:text-5xl text-dark-green mb-3 group-hover:scale-110 transition-transform">video_library</span>
+                                <h3 class="font-bold text-sm lg:text-base mb-2 text-dark-green font-montserrat">Nail Tutorials</h3>
+                                <p class="text-gray-600 text-xs lg:text-sm">Technique videos</p>
+                            </div>
+                        </a>
+
+                        <!-- Monthly Calendar -->
+                        <a href="#" class="bg-white rounded-xl p-5 lg:p-6 shadow-md hover:shadow-xl transition-all group border-2 border-transparent hover:border-dark-green">
+                            <div class="flex flex-col">
+                                <span class="material-icons-outlined text-4xl lg:text-5xl text-dark-green mb-3 group-hover:scale-110 transition-transform">event</span>
+                                <h3 class="font-bold text-sm lg:text-base mb-2 text-dark-green font-montserrat">Monthly Calendar</h3>
+                                <p class="text-gray-600 text-xs lg:text-sm">All upcoming events</p>
+                            </div>
+                        </a>
+
+                        <!-- Live Class Replay -->
+                        <a href="#" class="bg-white rounded-xl p-5 lg:p-6 shadow-md hover:shadow-xl transition-all group border-2 border-transparent hover:border-dark-green">
+                            <div class="flex flex-col">
+                                <span class="material-icons-outlined text-4xl lg:text-5xl text-dark-green mb-3 group-hover:scale-110 transition-transform">play_lesson</span>
+                                <h3 class="font-bold text-sm lg:text-base mb-2 text-dark-green font-montserrat">Class Replays</h3>
+                                <p class="text-gray-600 text-xs lg:text-sm">Catch up on sessions</p>
+                            </div>
+                        </a>
+
+                        <!-- Community Feed -->
+                        <a href="#" class="bg-white rounded-xl p-5 lg:p-6 shadow-md hover:shadow-xl transition-all group border-2 border-transparent hover:border-dark-green">
+                            <div class="flex flex-col">
+                                <span class="material-icons-outlined text-4xl lg:text-5xl text-dark-green mb-3 group-hover:scale-110 transition-transform">forum</span>
+                                <h3 class="font-bold text-sm lg:text-base mb-2 text-dark-green font-montserrat">Community Feed</h3>
+                                <p class="text-gray-600 text-xs lg:text-sm">Connect with nail techs</p>
+                            </div>
+                        </a>
+
+                        <!-- Accredited Courses -->
+                        <a href="#" class="bg-white rounded-xl p-5 lg:p-6 shadow-md hover:shadow-xl transition-all group border-2 border-transparent hover:border-dark-green">
+                            <div class="flex flex-col">
+                                <span class="material-icons-outlined text-4xl lg:text-5xl text-dark-green mb-3 group-hover:scale-110 transition-transform">verified</span>
+                                <h3 class="font-bold text-sm lg:text-base mb-2 text-dark-green font-montserrat">Accredited Courses</h3>
+                                <p class="text-gray-600 text-xs lg:text-sm">Professional certifications</p>
+                            </div>
+                        </a>
+
+                    </div>
+                </section>
 
                 <!-- Educator Elevation Section - Conditional -->
                 <!-- Replace GROUP_ID with actual Educator Elevation LearnDash group ID -->
@@ -290,59 +405,6 @@ $user_groups_json = json_encode($user_groups);
                                 <p class="text-xs opacity-90">View cohort sessions</p>
                             </div>
                         </a>
-                    </div>
-                </section>
-
-                <!-- Main Navigation Grid - Gold Members Only -->
-                <section data-require-groups="4383" style="display: none;">
-                    <h2 class="text-xl lg:text-2xl font-bold text-dark-green mb-5 font-montserrat">Your Dashboard</h2>
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 lg:gap-5">
-
-                        <!-- Business Programme -->
-                        <a href="#" class="bg-white rounded-xl p-5 lg:p-6 shadow-md hover:shadow-xl transition-all group border-2 border-transparent hover:border-dark-green">
-                            <div class="flex flex-col">
-                                <span class="material-icons-outlined text-4xl lg:text-5xl text-dark-green mb-3 group-hover:scale-110 transition-transform">business_center</span>
-                                <h3 class="font-bold text-sm lg:text-base mb-2 text-dark-green font-montserrat">Business Programme</h3>
-                                <p class="text-gray-600 text-xs lg:text-sm">Build & grow your business</p>
-                            </div>
-                        </a>
-
-                        <!-- Nail Tutorials -->
-                        <a href="#" class="bg-white rounded-xl p-5 lg:p-6 shadow-md hover:shadow-xl transition-all group border-2 border-transparent hover:border-dark-green">
-                            <div class="flex flex-col">
-                                <span class="material-icons-outlined text-4xl lg:text-5xl text-dark-green mb-3 group-hover:scale-110 transition-transform">video_library</span>
-                                <h3 class="font-bold text-sm lg:text-base mb-2 text-dark-green font-montserrat">Nail Tutorials</h3>
-                                <p class="text-gray-600 text-xs lg:text-sm">Technique videos</p>
-                            </div>
-                        </a>
-
-                        <!-- Monthly Calendar -->
-                        <a href="#" class="bg-white rounded-xl p-5 lg:p-6 shadow-md hover:shadow-xl transition-all group border-2 border-transparent hover:border-dark-green">
-                            <div class="flex flex-col">
-                                <span class="material-icons-outlined text-4xl lg:text-5xl text-dark-green mb-3 group-hover:scale-110 transition-transform">event</span>
-                                <h3 class="font-bold text-sm lg:text-base mb-2 text-dark-green font-montserrat">Monthly Calendar</h3>
-                                <p class="text-gray-600 text-xs lg:text-sm">All upcoming events</p>
-                            </div>
-                        </a>
-
-                        <!-- Live Class Replay -->
-                        <a href="#" class="bg-white rounded-xl p-5 lg:p-6 shadow-md hover:shadow-xl transition-all group border-2 border-transparent hover:border-dark-green">
-                            <div class="flex flex-col">
-                                <span class="material-icons-outlined text-4xl lg:text-5xl text-dark-green mb-3 group-hover:scale-110 transition-transform">play_lesson</span>
-                                <h3 class="font-bold text-sm lg:text-base mb-2 text-dark-green font-montserrat">Class Replays</h3>
-                                <p class="text-gray-600 text-xs lg:text-sm">Catch up on sessions</p>
-                            </div>
-                        </a>
-
-                        <!-- Community Feed -->
-                        <a href="#" class="bg-white rounded-xl p-5 lg:p-6 shadow-md hover:shadow-xl transition-all group border-2 border-transparent hover:border-dark-green col-span-2 md:col-span-1">
-                            <div class="flex flex-col">
-                                <span class="material-icons-outlined text-4xl lg:text-5xl text-dark-green mb-3 group-hover:scale-110 transition-transform">forum</span>
-                                <h3 class="font-bold text-sm lg:text-base mb-2 text-dark-green font-montserrat">Community Feed</h3>
-                                <p class="text-gray-600 text-xs lg:text-sm">Connect with nail techs</p>
-                            </div>
-                        </a>
-
                     </div>
                 </section>
 
@@ -662,58 +724,77 @@ async function checkLiveClass() {
             const nowUK = new Date(ukTimeString);
 
             // Parse event start and end times
-            const eventStart = new Date(event.start_date);
-            const eventEnd = new Date(event.end_date);
+            // The Events Calendar returns dates in UK timezone already (e.g., "2025-10-13 10:00:00")
+            // Simply parse the date string directly - it's already in the correct UK time
+            const eventStartUK = new Date(event.start_date.replace(' ', 'T'));
+            const eventEndUK = new Date(event.end_date.replace(' ', 'T'));
 
-            // Determine event state: before, during, or after
-            if (nowUK < eventStart) {
-                // BEFORE EVENT - Show "Starting at [TIME]" with Zoom link
-                const hours = eventStart.getHours();
-                const minutes = String(eventStart.getMinutes()).padStart(2, '0');
-                const ampm = hours >= 12 ? 'PM' : 'AM';
-                const displayHours = hours % 12 || 12;
+            // Check if event is same day as today
+            const eventDateUK = eventStartUK.toLocaleDateString("en-US");
+            const todayDateUK = nowUK.toLocaleDateString("en-US");
+            const isSameDay = eventDateUK === todayDateUK;
 
-                const alertBox = document.getElementById('live-class-alert');
-                document.getElementById('live-class-title').innerHTML = eventTitle;
-                document.getElementById('live-class-time').textContent = `Starting at ${displayHours}:${minutes} ${ampm}`;
-                document.getElementById('live-class-link').innerHTML = 'Join Zoom <span class="material-icons-outlined text-lg">arrow_forward</span>';
-                document.getElementById('live-class-link').href = zoomLink;
-                alertBox.classList.add('animate-fade-in-up');
-                alertBox.style.display = 'block';
+            const alertBox = document.getElementById('live-class-alert');
+            const linkElement = document.getElementById('live-class-link');
 
-            } else if (nowUK >= eventStart && nowUK <= eventEnd) {
-                // DURING EVENT - Show "LIVE NOW" with pulsing indicator and Zoom link
-                const alertBox = document.getElementById('live-class-alert');
-                document.getElementById('live-class-title').innerHTML = `${eventTitle} <span class="inline-flex items-center ml-2 px-2 py-1 bg-red-600 text-white text-xs font-bold rounded-full animate-pulse">LIVE</span>`;
-                document.getElementById('live-class-time').textContent = 'Happening now!';
-                document.getElementById('live-class-link').innerHTML = 'Join Now <span class="material-icons-outlined text-lg">arrow_forward</span>';
-                document.getElementById('live-class-link').href = zoomLink;
-                alertBox.classList.add('animate-fade-in-up');
-                alertBox.style.display = 'block';
+            if (isSameDay) {
+                // EVENT IS TODAY - Show with buttons based on state
+                if (nowUK < eventStartUK) {
+                    // BEFORE EVENT - Show "Starting at [TIME]" with Zoom link
+                    const hours = eventStartUK.getHours();
+                    const minutes = String(eventStartUK.getMinutes()).padStart(2, '0');
 
-            } else {
-                // AFTER EVENT - Check if still same day in UK timezone
-                const eventDateUK = new Date(event.start_date).toLocaleDateString("en-US", {timeZone: "Europe/London"});
-                const todayDateUK = nowUK.toLocaleDateString("en-US", {timeZone: "Europe/London"});
+                    document.getElementById('live-class-title').innerHTML = eventTitle;
+                    document.getElementById('live-class-time').textContent = `Starting at ${hours}:${minutes} (UK time)`;
+                    linkElement.innerHTML = 'Join Zoom <span class="material-icons-outlined text-lg">arrow_forward</span>';
+                    linkElement.href = zoomLink;
+                    linkElement.style.display = 'flex';
+                    alertBox.classList.add('animate-fade-in-up');
+                    alertBox.style.display = 'block';
 
-                if (eventDateUK === todayDateUK) {
-                    // Still same day - show replay if link exists
+                } else if (nowUK >= eventStartUK && nowUK <= eventEndUK) {
+                    // DURING EVENT - Show "LIVE NOW" with pulsing indicator and Zoom link
+                    document.getElementById('live-class-title').innerHTML = `${eventTitle} <span class="inline-flex items-center ml-2 px-2 py-1 bg-red-600 text-white text-xs font-bold rounded-full animate-pulse">LIVE</span>`;
+                    document.getElementById('live-class-time').textContent = 'Happening now!';
+                    linkElement.innerHTML = 'Join Now <span class="material-icons-outlined text-lg">arrow_forward</span>';
+                    linkElement.href = zoomLink;
+                    linkElement.style.display = 'flex';
+                    alertBox.classList.add('animate-fade-in-up');
+                    alertBox.style.display = 'block';
+
+                } else {
+                    // AFTER EVENT (same day) - Show replay if link exists
                     if (replayLink && replayLink.trim() !== '') {
-                        const alertBox = document.getElementById('live-class-alert');
                         document.getElementById('live-class-title').innerHTML = eventTitle;
                         document.getElementById('live-class-time').textContent = 'Replay available';
-                        document.getElementById('live-class-link').innerHTML = 'Watch Replay <span class="material-icons-outlined text-lg">play_arrow</span>';
-                        document.getElementById('live-class-link').href = replayLink;
+                        linkElement.innerHTML = 'Watch Replay <span class="material-icons-outlined text-lg">play_arrow</span>';
+                        linkElement.href = replayLink;
+                        linkElement.style.display = 'flex';
                         alertBox.classList.add('animate-fade-in-up');
                         alertBox.style.display = 'block';
                     } else {
                         // No replay link, hide banner
-                        document.getElementById('live-class-alert').style.display = 'none';
+                        alertBox.style.display = 'none';
                     }
-                } else {
-                    // Next day - hide this event, next event will show instead
-                    document.getElementById('live-class-alert').style.display = 'none';
                 }
+            } else {
+                // EVENT IS IN THE FUTURE (not today) - Show as featured event without button
+                const eventDateFormatted = eventStartUK.toLocaleDateString("en-GB", {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long'
+                });
+                const eventTime = eventStartUK.toLocaleTimeString("en-GB", {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+
+                document.getElementById('live-class-title').innerHTML = `Next Live Session: ${eventTitle}`;
+                document.getElementById('live-class-time').textContent = `${eventDateFormatted} at ${eventTime} (UK time)`;
+                linkElement.style.display = 'none'; // Hide button for future events
+                alertBox.classList.add('animate-fade-in-up');
+                alertBox.style.display = 'block';
             }
         }
     } catch (error) {
@@ -760,7 +841,9 @@ function checkGroupAccess() {
 
         // Show element if user has access
         if (hasAccess) {
-            element.style.display = 'block';
+            // Get the computed display value or use 'block' as default
+            const displayValue = element.classList.contains('flex') || element.style.display === 'flex' ? 'flex' : 'block';
+            element.style.display = displayValue;
         }
     });
 
@@ -779,7 +862,9 @@ function checkGroupAccess() {
 
         // Show element if user is not in excluded groups
         if (hasAccess) {
-            element.style.display = 'block';
+            // Get the computed display value or use 'block' as default
+            const displayValue = element.classList.contains('flex') || element.style.display === 'flex' ? 'flex' : 'block';
+            element.style.display = displayValue;
         }
     });
 }
