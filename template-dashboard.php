@@ -19,6 +19,9 @@ $user_id = get_current_user_id();
 // Get user's LearnDash groups for conditional display
 $user_groups = learndash_get_users_group_ids($user_id);
 $user_groups_json = json_encode($user_groups);
+
+// Generate nonce for REST API authentication
+$rest_nonce = wp_create_nonce('wp_rest');
 ?>
 
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet"/>
@@ -282,7 +285,7 @@ $user_groups_json = json_encode($user_groups);
                         <?php endif; ?>
 
                         <!-- Business Programme -->
-                        <a href="#" class="bg-white rounded-xl p-5 lg:p-6 shadow-md hover:shadow-xl transition-all group border-2 border-transparent hover:border-dark-green">
+                        <a href="https://thenailtech.org/business-programme/" class="bg-white rounded-xl p-5 lg:p-6 shadow-md hover:shadow-xl transition-all group border-2 border-transparent hover:border-dark-green">
                             <div class="flex flex-col">
                                 <span class="material-icons-outlined text-4xl lg:text-5xl text-dark-green mb-3 group-hover:scale-110 transition-transform">business_center</span>
                                 <h3 class="font-bold text-sm lg:text-base mb-2 text-dark-green font-montserrat">Business Programme</h3>
@@ -291,7 +294,7 @@ $user_groups_json = json_encode($user_groups);
                         </a>
 
                         <!-- Nail Tutorials -->
-                        <a href="#" class="bg-white rounded-xl p-5 lg:p-6 shadow-md hover:shadow-xl transition-all group border-2 border-transparent hover:border-dark-green">
+                        <a href="https://thenailtech.org/nail-tutorials/" class="bg-white rounded-xl p-5 lg:p-6 shadow-md hover:shadow-xl transition-all group border-2 border-transparent hover:border-dark-green">
                             <div class="flex flex-col">
                                 <span class="material-icons-outlined text-4xl lg:text-5xl text-dark-green mb-3 group-hover:scale-110 transition-transform">video_library</span>
                                 <h3 class="font-bold text-sm lg:text-base mb-2 text-dark-green font-montserrat">Nail Tutorials</h3>
@@ -300,7 +303,7 @@ $user_groups_json = json_encode($user_groups);
                         </a>
 
                         <!-- Monthly Calendar -->
-                        <a href="#" class="bg-white rounded-xl p-5 lg:p-6 shadow-md hover:shadow-xl transition-all group border-2 border-transparent hover:border-dark-green">
+                        <a href="https://thenailtech.org/events/" class="bg-white rounded-xl p-5 lg:p-6 shadow-md hover:shadow-xl transition-all group border-2 border-transparent hover:border-dark-green">
                             <div class="flex flex-col">
                                 <span class="material-icons-outlined text-4xl lg:text-5xl text-dark-green mb-3 group-hover:scale-110 transition-transform">event</span>
                                 <h3 class="font-bold text-sm lg:text-base mb-2 text-dark-green font-montserrat">Monthly Calendar</h3>
@@ -309,7 +312,7 @@ $user_groups_json = json_encode($user_groups);
                         </a>
 
                         <!-- Live Class Replay -->
-                        <a href="#" class="bg-white rounded-xl p-5 lg:p-6 shadow-md hover:shadow-xl transition-all group border-2 border-transparent hover:border-dark-green">
+                        <a href="https://thenailtech.org/live-classes-and-replays" class="bg-white rounded-xl p-5 lg:p-6 shadow-md hover:shadow-xl transition-all group border-2 border-transparent hover:border-dark-green">
                             <div class="flex flex-col">
                                 <span class="material-icons-outlined text-4xl lg:text-5xl text-dark-green mb-3 group-hover:scale-110 transition-transform">play_lesson</span>
                                 <h3 class="font-bold text-sm lg:text-base mb-2 text-dark-green font-montserrat">Class Replays</h3>
@@ -318,7 +321,7 @@ $user_groups_json = json_encode($user_groups);
                         </a>
 
                         <!-- Community Feed -->
-                        <a href="#" class="bg-white rounded-xl p-5 lg:p-6 shadow-md hover:shadow-xl transition-all group border-2 border-transparent hover:border-dark-green">
+                        <a href="https://thenailtech.org/news-feed/" class="bg-white rounded-xl p-5 lg:p-6 shadow-md hover:shadow-xl transition-all group border-2 border-transparent hover:border-dark-green">
                             <div class="flex flex-col">
                                 <span class="material-icons-outlined text-4xl lg:text-5xl text-dark-green mb-3 group-hover:scale-110 transition-transform">forum</span>
                                 <h3 class="font-bold text-sm lg:text-base mb-2 text-dark-green font-montserrat">Community Feed</h3>
@@ -327,7 +330,7 @@ $user_groups_json = json_encode($user_groups);
                         </a>
 
                         <!-- Accredited Courses -->
-                        <a href="#" class="bg-white rounded-xl p-5 lg:p-6 shadow-md hover:shadow-xl transition-all group border-2 border-transparent hover:border-dark-green">
+                        <a href="https://thenailtech.org/accredited-courses-list/" class="bg-white rounded-xl p-5 lg:p-6 shadow-md hover:shadow-xl transition-all group border-2 border-transparent hover:border-dark-green">
                             <div class="flex flex-col">
                                 <span class="material-icons-outlined text-4xl lg:text-5xl text-dark-green mb-3 group-hover:scale-110 transition-transform">verified</span>
                                 <h3 class="font-bold text-sm lg:text-base mb-2 text-dark-green font-montserrat">Accredited Courses</h3>
@@ -339,28 +342,27 @@ $user_groups_json = json_encode($user_groups);
                 </section>
 
                 <!-- Educator Elevation Section - Conditional -->
-                <!-- Replace GROUP_ID with actual Educator Elevation LearnDash group ID -->
                 <section id="educator-elevation" class="bg-white rounded-xl p-5 lg:p-8 shadow-md" data-require-groups="272088" style="display: none;">
                     <div class="flex items-center gap-3 mb-6">
                         <span class="material-icons-outlined text-3xl lg:text-4xl text-dark-green">school</span>
                         <h2 class="text-xl lg:text-2xl font-bold text-dark-green">Educator Elevation</h2>
                     </div>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        <a href="#" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md">
+                        <a href="https://thenailtech.org/groups/the-educator-elevation-september-2025/" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md">
                             <div class="flex flex-col items-center text-center text-white">
                                 <span class="material-icons-outlined text-4xl lg:text-5xl mb-3">groups</span>
                                 <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">Community Hub</h3>
                                 <p class="text-xs opacity-90">Engage with cohort</p>
                             </div>
                         </a>
-                        <a href="#" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md">
+                        <a href="https://thenailtech.org/courses/the-educator-elevation/" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md">
                             <div class="flex flex-col items-center text-center text-white">
                                 <span class="material-icons-outlined text-4xl lg:text-5xl mb-3">menu_book</span>
                                 <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">Course Materials</h3>
                                 <p class="text-xs opacity-90">Lessons & resources</p>
                             </div>
                         </a>
-                        <a href="#" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md col-span-2 md:col-span-1">
+                        <a href="https://thenailtech.org/september-25-group-1-educators-course-schedule/" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md col-span-2 md:col-span-1">
                             <div class="flex flex-col items-center text-center text-white">
                                 <span class="material-icons-outlined text-4xl lg:text-5xl mb-3">calendar_month</span>
                                 <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">Schedule</h3>
@@ -377,28 +379,28 @@ $user_groups_json = json_encode($user_groups);
                         <h2 class="text-xl lg:text-2xl font-bold text-dark-green">Builder Brand Programme</h2>
                     </div>
                     <div class="flex flex-wrap gap-4">
-                        <a href="#" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md flex-1 min-w-[calc(50%-0.5rem)] md:min-w-[calc(33.333%-0.67rem)]">
+                        <a href="https://thenailtech.org/groups/brand-builder-incubator-1570503813/" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md flex-1 min-w-[calc(50%-0.5rem)] md:min-w-[calc(33.333%-0.67rem)]">
                             <div class="flex flex-col items-center text-center text-white">
                                 <span class="material-icons-outlined text-4xl lg:text-5xl mb-3">groups</span>
                                 <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">BBP Community</h3>
                                 <p class="text-xs opacity-90">Connect with BBP members</p>
                             </div>
                         </a>
-                        <a href="#" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md flex-1 min-w-[calc(50%-0.5rem)] md:min-w-[calc(33.333%-0.67rem)]" data-require-groups="348042" style="display: none;">
+                        <a href="https://thenailtech.org/groups/brand-builder-incubator-vip/" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md flex-1 min-w-[calc(50%-0.5rem)] md:min-w-[calc(33.333%-0.67rem)]" data-require-groups="348042" style="display: none;">
                             <div class="flex flex-col items-center text-center text-white">
                                 <span class="material-icons-outlined text-4xl lg:text-5xl mb-3">workspace_premium</span>
                                 <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">VIP Community</h3>
                                 <p class="text-xs opacity-90">Exclusive VIP access</p>
                             </div>
                         </a>
-                        <a href="#" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md flex-1 min-w-[calc(50%-0.5rem)] md:min-w-[calc(33.333%-0.67rem)]">
+                        <a href="https://thenailtech.org/courses/brand-builder-incubator/" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md flex-1 min-w-[calc(50%-0.5rem)] md:min-w-[calc(33.333%-0.67rem)]">
                             <div class="flex flex-col items-center text-center text-white">
                                 <span class="material-icons-outlined text-4xl lg:text-5xl mb-3">menu_book</span>
                                 <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">Course Materials</h3>
                                 <p class="text-xs opacity-90">Lessons & resources</p>
                             </div>
                         </a>
-                        <a href="#" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md flex-1 min-w-[calc(50%-0.5rem)] md:min-w-[calc(33.333%-0.67rem)]">
+                        <a href="https://thenailtech.org/courses/brand-builder-incubator/" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md flex-1 min-w-[calc(50%-0.5rem)] md:min-w-[calc(33.333%-0.67rem)]">
                             <div class="flex flex-col items-center text-center text-white">
                                 <span class="material-icons-outlined text-4xl lg:text-5xl mb-3">calendar_month</span>
                                 <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">Schedule</h3>
@@ -457,7 +459,7 @@ $user_groups_json = json_encode($user_groups);
 
                 <!-- Quick Start -->
                 <section>
-                    <a href="#" class="block bg-gradient-to-br from-sand to-white rounded-xl p-6 lg:p-8 shadow-md border-2 border-dark-green hover:shadow-lg transition-all group">
+                    <a href="https://thenailtech.org/new-members-area/" class="block bg-gradient-to-br from-sand to-white rounded-xl p-6 lg:p-8 shadow-md border-2 border-dark-green hover:shadow-lg transition-all group">
                         <div class="flex flex-col items-center text-center gap-4">
                             <span class="material-icons-outlined text-5xl lg:text-6xl text-dark-green group-hover:scale-110 transition-transform">play_circle</span>
                             <div>
@@ -509,6 +511,9 @@ const communityFeeds = [];
 if (adminHasFullAccess || userGroups.includes(4383)) { // Gold Members
     communityFeeds.push({ id: null, name: 'Gold Members', label: 'Gold' });
 }
+if (adminHasFullAccess || userGroups.includes(272088)) { // Educator Elevation
+    communityFeeds.push({ id: 65, name: 'Educator Elevation', label: 'Educator' });
+}
 if (adminHasFullAccess || userGroups.includes(348042)) { // BBP VIP
     communityFeeds.push({ id: 68, name: 'BBP VIP', label: 'BBP VIP' });
 }
@@ -522,13 +527,20 @@ async function loadCommunityFeed(groupId = null, containerId = 'community-feeds'
     const feedContainer = document.getElementById(containerId);
 
     try {
-        // Build API URL based on group
-        let apiUrl = 'https://thenailtech.org/wp-json/buddyboss/v1/activity?per_page=20';
+        // Build BuddyBoss REST API URL
+        let apiUrl = 'https://thenailtech.org/wp-json/buddyboss/v1/activity?per_page=5&display_comments=false';
         if (groupId) {
             apiUrl += `&group_id=${groupId}`;
         }
 
-        const response = await fetch(apiUrl);
+        const response = await fetch(apiUrl, {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: {
+                'X-WP-Nonce': '<?php echo $rest_nonce; ?>'
+            }
+        });
+
         const activities = await response.json();
 
         if (!activities || activities.length === 0) {
@@ -536,40 +548,77 @@ async function loadCommunityFeed(groupId = null, containerId = 'community-feeds'
             return;
         }
 
-        // Filter to only show actual posts (activity_update type) and limit to 5
-        const posts = activities.filter(activity => activity.type === 'activity_update').slice(0, 5);
+        // Filter for activity_update type only
+        const posts = activities.filter(a => a.type === 'activity_update').slice(0, 5);
 
         if (posts.length === 0) {
-            feedContainer.innerHTML = '<p class="text-center text-gray-500 text-sm py-6">No recent posts</p>';
+            feedContainer.innerHTML = '<p class="text-center text-gray-500 text-sm py-6">No recent activity</p>';
             return;
         }
 
-        feedContainer.innerHTML = `<div class="space-y-3">${posts.map(activity => {
+        // Create container with posts
+        const postsContainer = document.createElement('div');
+        postsContainer.className = 'space-y-3';
+
+        posts.forEach(activity => {
             const date = new Date(activity.date);
             const timeAgo = getTimeAgo(date);
 
-            return `
-                <div class="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-all border-2 border-transparent hover:border-sand">
-                    <div class="flex items-start gap-3 mb-3">
-                        <img src="${activity.user_avatar.thumb}" alt="${activity.name}" class="w-10 h-10 rounded-full object-cover ring-2 ring-sand flex-shrink-0" />
-                        <div class="flex-1 min-w-0">
-                            <div class="flex flex-col gap-1">
-                                <h3 class="font-bold text-dark-green font-montserrat text-sm truncate">${activity.name}</h3>
-                                <span class="text-xs text-gray-500">${timeAgo}</span>
-                            </div>
-                        </div>
-                    </div>
-                    ${activity.content_stripped ? `
-                        <div class="text-xs text-gray-700 mb-3 line-clamp-3">
-                            ${activity.content_stripped}
-                        </div>
-                    ` : ''}
-                    <a href="${activity.link}" target="_blank" class="text-dark-green font-semibold hover:underline flex items-center gap-1 text-xs">
-                        Read More <span class="material-icons-outlined text-sm">arrow_forward</span>
-                    </a>
-                </div>
-            `;
-        }).join('')}</div>`;
+            // Create post card
+            const postCard = document.createElement('div');
+            postCard.className = 'bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-all border-2 border-transparent hover:border-sand';
+
+            // Header section
+            const header = document.createElement('div');
+            header.className = 'flex items-start gap-3 mb-3';
+
+            const avatar = document.createElement('img');
+            avatar.src = activity.user_avatar?.thumb || activity.user_avatar?.full || '';
+            avatar.alt = activity.name;
+            avatar.className = 'w-10 h-10 rounded-full object-cover ring-2 ring-sand flex-shrink-0';
+
+            const userInfo = document.createElement('div');
+            userInfo.className = 'flex-1 min-w-0';
+            const infoInner = document.createElement('div');
+            infoInner.className = 'flex flex-col gap-1';
+
+            const userName = document.createElement('h3');
+            userName.className = 'font-bold text-dark-green font-montserrat text-sm truncate';
+            userName.textContent = activity.name;
+
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'text-xs text-gray-500';
+            timeSpan.textContent = timeAgo;
+
+            infoInner.appendChild(userName);
+            infoInner.appendChild(timeSpan);
+            userInfo.appendChild(infoInner);
+
+            header.appendChild(avatar);
+            header.appendChild(userInfo);
+            postCard.appendChild(header);
+
+            // Content section
+            if (activity.content_stripped || activity.content?.rendered) {
+                const content = document.createElement('div');
+                content.className = 'text-xs text-gray-700 mb-3 line-clamp-3';
+                content.textContent = activity.content_stripped || activity.content?.rendered?.replace(/<[^>]*>/g, '') || '';
+                postCard.appendChild(content);
+            }
+
+            // Read more link
+            const link = document.createElement('a');
+            link.href = activity.link;
+            link.target = '_blank';
+            link.className = 'text-dark-green font-semibold hover:underline flex items-center gap-1 text-xs';
+            link.innerHTML = 'Read More <span class="material-icons-outlined text-sm">arrow_forward</span>';
+
+            postCard.appendChild(link);
+            postsContainer.appendChild(postCard);
+        });
+
+        feedContainer.innerHTML = '';
+        feedContainer.appendChild(postsContainer);
 
     } catch (error) {
         console.error('Error loading community feed:', error);
