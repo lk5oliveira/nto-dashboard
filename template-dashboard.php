@@ -107,7 +107,7 @@ $rest_nonce = wp_create_nonce('wp_rest');
     }
 </style>
 
-<div class="nto-dashboard" style="background: #f6f1ea; min-height: 100vh;">
+<div class="nto-dashboard" style="background: #f6f1ea; min-height: 100vh;padding: 0px">
     <!-- Welcome Banner -->
     <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-6 pb-4">
         <div class="flex flex-col md:flex-row items-center md:items-start justify-between gap-4">
@@ -162,7 +162,7 @@ $rest_nonce = wp_create_nonce('wp_rest');
         </div>
     </div>
 
-    <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+    <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8" style="padding:0px;">
 
         <!-- Conditional Alerts Section - Flexible layout - Gold Members Only -->
         <section id="alerts" class="flex flex-col md:flex-row gap-3 lg:gap-4 mb-6 relative" data-require-groups="4383" style="display: none;">
@@ -527,8 +527,8 @@ async function loadCommunityFeed(groupId = null, containerId = 'community-feeds'
     const feedContainer = document.getElementById(containerId);
 
     try {
-        // Build BuddyBoss REST API URL
-        let apiUrl = 'https://thenailtech.org/wp-json/buddyboss/v1/activity?per_page=5&display_comments=false';
+        // Build BuddyBoss REST API URL - request more items to ensure we get 5 activity_update posts after filtering
+        let apiUrl = 'https://thenailtech.org/wp-json/buddyboss/v1/activity?per_page=20&display_comments=false';
         if (groupId) {
             apiUrl += `&group_id=${groupId}`;
         }
@@ -548,7 +548,7 @@ async function loadCommunityFeed(groupId = null, containerId = 'community-feeds'
             return;
         }
 
-        // Filter for activity_update type only
+        // Filter for activity_update type only and limit to 5
         const posts = activities.filter(a => a.type === 'activity_update').slice(0, 5);
 
         if (posts.length === 0) {
@@ -606,6 +606,32 @@ async function loadCommunityFeed(groupId = null, containerId = 'community-feeds'
                 postCard.appendChild(content);
             }
 
+            // Footer with likes, comments, and read more
+            const footer = document.createElement('div');
+            footer.className = 'flex items-center justify-between gap-3';
+
+            // Likes and comments count
+            const stats = document.createElement('div');
+            stats.className = 'flex items-center gap-3 text-gray-500';
+
+            // Likes
+            if (activity.favorite_count && activity.favorite_count > 0) {
+                const likes = document.createElement('div');
+                likes.className = 'flex items-center gap-1 text-xs';
+                likes.innerHTML = `<span class="material-icons-outlined text-sm">favorite</span> ${activity.favorite_count}`;
+                stats.appendChild(likes);
+            }
+
+            // Comments
+            if (activity.comment_count && activity.comment_count > 0) {
+                const comments = document.createElement('div');
+                comments.className = 'flex items-center gap-1 text-xs';
+                comments.innerHTML = `<span class="material-icons-outlined text-sm">chat_bubble_outline</span> ${activity.comment_count}`;
+                stats.appendChild(comments);
+            }
+
+            footer.appendChild(stats);
+
             // Read more link
             const link = document.createElement('a');
             link.href = activity.link;
@@ -613,7 +639,8 @@ async function loadCommunityFeed(groupId = null, containerId = 'community-feeds'
             link.className = 'text-dark-green font-semibold hover:underline flex items-center gap-1 text-xs';
             link.innerHTML = 'Read More <span class="material-icons-outlined text-sm">arrow_forward</span>';
 
-            postCard.appendChild(link);
+            footer.appendChild(link);
+            postCard.appendChild(footer);
             postsContainer.appendChild(postCard);
         });
 
