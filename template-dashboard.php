@@ -400,7 +400,7 @@ $rest_nonce = wp_create_nonce('wp_rest');
                                 <p class="text-xs opacity-90">Lessons & resources</p>
                             </div>
                         </a>
-                        <a href="https://thenailtech.org/courses/brand-builder-incubator/" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md flex-1 min-w-[calc(50%-0.5rem)] md:min-w-[calc(33.333%-0.67rem)]">
+                        <a href="https://thenailtech.org/lessons/call-schedule-links/" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md flex-1 min-w-[calc(50%-0.5rem)] md:min-w-[calc(33.333%-0.67rem)]">
                             <div class="flex flex-col items-center text-center text-white">
                                 <span class="material-icons-outlined text-4xl lg:text-5xl mb-3">calendar_month</span>
                                 <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">Schedule</h3>
