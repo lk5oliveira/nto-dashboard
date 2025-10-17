@@ -2,7 +2,7 @@
 /**
  * Plugin Name: NTO Daily Tutorial
  * Description: Automatically rotates a daily tutorial from LearnDash courses in the Tutorials category
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: The Nail Tech Org
  * Requires at least: 5.0
  * Requires PHP: 7.4
@@ -90,6 +90,11 @@ class NTO_Daily_Tutorial {
      * Render admin page
      */
     public function render_admin_page() {
+        // Fallback: Ensure cron is scheduled
+        if (!wp_next_scheduled('nto_daily_tutorial_rotation')) {
+            wp_schedule_event(strtotime('tomorrow midnight'), 'daily', 'nto_daily_tutorial_rotation');
+        }
+
         // Get current tutorial data (already complete, no queries needed)
         $tutorial_data = get_option('nto_daily_tutorial');
 

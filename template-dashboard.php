@@ -20,6 +20,23 @@ $user_id = get_current_user_id();
 $user_groups = learndash_get_users_group_ids($user_id);
 $user_groups_json = json_encode($user_groups);
 
+// TEMPORARY: Testing override - REMOVE AFTER TESTING
+$test_groups = isset($_GET['test_groups']) ? array_map('intval', explode(',', $_GET['test_groups'])) : null;
+$is_testing = $test_groups !== null;
+if ($is_testing) {
+    $user_groups = $test_groups;
+    $user_groups_json = json_encode($test_groups);
+}
+
+// Check group membership (server-side for security)
+$is_admin = current_user_can('administrator');
+$admin_bypass = $is_admin && !$is_testing; // Disable bypass during testing
+$is_gold_member = $admin_bypass || in_array(4383, $user_groups);
+$is_educator = $admin_bypass || in_array(272088, $user_groups);
+$is_bbp = $admin_bypass || in_array(347879, $user_groups);
+$is_bbp_vip = $admin_bypass || in_array(348042, $user_groups);
+$has_any_group = $is_gold_member || $is_educator || $is_bbp || $is_bbp_vip;
+
 // Generate nonce for REST API authentication
 $rest_nonce = wp_create_nonce('wp_rest');
 ?>
@@ -162,14 +179,17 @@ $rest_nonce = wp_create_nonce('wp_rest');
         </div>
     </div>
 
-    <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8" style="padding:0px;">
+    <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8" style="padding:0px;padding-bottom: 2rem">
 
         <!-- Conditional Alerts Section - Flexible layout - Gold Members Only -->
-        <section id="alerts" class="flex flex-col md:flex-row gap-3 lg:gap-4 mb-6 relative" data-require-groups="4383" style="display: none;">
+        <?php if ($is_gold_member) : ?>
+        <section id="alerts" class="flex flex-col md:flex-row gap-3 lg:gap-4 mb-6 relative">
             <!-- Loading indicator for live class check -->
-            <div id="live-class-loader" class="absolute -top-8 right-0 flex items-center gap-2 text-dark-green opacity-60" style="display: none;">
-                <span class="material-icons-outlined text-sm animate-spin">refresh</span>
-                <span class="text-xs">Checking for live events...</span>
+            <div id="live-class-loader" class="inset-0 flex items-center justify-center text-dark-green opacity-60" style="display: none;">
+                <div class="flex items-center gap-2">
+                    <span class="material-icons-outlined text-lg animate-spin">refresh</span>
+                    <span class="text-sm">Checking for live events...</span>
+                </div>
             </div>
             <!-- Live Class Alert - Conditional -->
             <div id="live-class-alert" class="flex-1 bg-gradient-to-r from-dark-green to-dark-green-light rounded-xl p-4 lg:p-6 shadow-lg text-white" style="display: none;">
@@ -199,6 +219,7 @@ $rest_nonce = wp_create_nonce('wp_rest');
                 </button>
             </div>
         </section>
+        <?php endif; ?>
 
         <?php if ($last_course_url) : ?>
             <!-- Mobile version - Continue Learning Card -->
@@ -227,7 +248,8 @@ $rest_nonce = wp_create_nonce('wp_rest');
             <div class="lg:col-span-2 space-y-6">
 
                 <!-- Main Navigation Grid - Gold Members Only -->
-                <section data-require-groups="4383" style="display: none;">
+                <?php if ($is_gold_member) : ?>
+                <section>
                     <h2 class="text-xl lg:text-2xl font-bold text-dark-green mb-5 font-montserrat">Your Dashboard</h2>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4 lg:gap-5">
 
@@ -340,9 +362,53 @@ $rest_nonce = wp_create_nonce('wp_rest');
 
                     </div>
                 </section>
+                <?php endif; ?>
+
+                <!-- Builder Brand Programme Section - For BBP and BBP VIP members -->
+                <?php if ($is_bbp || $is_bbp_vip) : ?>
+                <section id="bbp-section" class="bg-white rounded-xl p-5 lg:p-8 shadow-md">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="material-icons-outlined text-3xl lg:text-4xl text-dark-green">rocket_launch</span>
+                        <h2 class="text-xl lg:text-2xl font-bold text-dark-green">Builder Brand Programme</h2>
+                    </div>
+                    <div class="flex flex-wrap gap-4">
+                        <a href="https://thenailtech.org/groups/brand-builder-programme/" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md flex-1 min-w-[calc(50%-0.5rem)] md:min-w-[calc(33.333%-0.67rem)]">
+                            <div class="flex flex-col items-center text-center text-white">
+                                <span class="material-icons-outlined text-4xl lg:text-5xl mb-3">groups</span>
+                                <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">BBP Community</h3>
+                                <p class="text-xs opacity-90">Connect with BBP members</p>
+                            </div>
+                        </a>
+                        <?php if ($is_bbp_vip) : ?>
+                        <a href="https://thenailtech.org/groups/brand-builder-programme-vip/" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md flex-1 min-w-[calc(50%-0.5rem)] md:min-w-[calc(33.333%-0.67rem)]">
+                            <div class="flex flex-col items-center text-center text-white">
+                                <span class="material-icons-outlined text-4xl lg:text-5xl mb-3">workspace_premium</span>
+                                <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">VIP Community</h3>
+                                <p class="text-xs opacity-90">Exclusive VIP access</p>
+                            </div>
+                        </a>
+                        <?php endif; ?>
+                        <a href="https://thenailtech.org/courses/the-brand-builder-programme/" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md flex-1 min-w-[calc(50%-0.5rem)] md:min-w-[calc(33.333%-0.67rem)]">
+                            <div class="flex flex-col items-center text-center text-white">
+                                <span class="material-icons-outlined text-4xl lg:text-5xl mb-3">menu_book</span>
+                                <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">Course Materials</h3>
+                                <p class="text-xs opacity-90">Lessons & resources</p>
+                            </div>
+                        </a>
+                        <a href="https://thenailtech.org/lessons/call-schedule-links/" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md flex-1 min-w-[calc(50%-0.5rem)] md:min-w-[calc(33.333%-0.67rem)]">
+                            <div class="flex flex-col items-center text-center text-white">
+                                <span class="material-icons-outlined text-4xl lg:text-5xl mb-3">calendar_month</span>
+                                <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">Schedule</h3>
+                                <p class="text-xs opacity-90">View cohort sessions</p>
+                            </div>
+                        </a>
+                    </div>
+                </section>
+                <?php endif; ?>
 
                 <!-- Educator Elevation Section - Conditional -->
-                <section id="educator-elevation" class="bg-white rounded-xl p-5 lg:p-8 shadow-md" data-require-groups="272088" style="display: none;">
+                <?php if ($is_educator) : ?>
+                <section id="educator-elevation" class="bg-white rounded-xl p-5 lg:p-8 shadow-md">
                     <div class="flex items-center gap-3 mb-6">
                         <span class="material-icons-outlined text-3xl lg:text-4xl text-dark-green">school</span>
                         <h2 class="text-xl lg:text-2xl font-bold text-dark-green">Educator Elevation</h2>
@@ -371,47 +437,11 @@ $rest_nonce = wp_create_nonce('wp_rest');
                         </a>
                     </div>
                 </section>
-
-                <!-- Builder Brand Programme Section - For BBP and BBP VIP members -->
-                <section id="bbp-section" class="bg-white rounded-xl p-5 lg:p-8 shadow-md" data-require-groups="347879,348042" style="display: none;">
-                    <div class="flex items-center gap-3 mb-6">
-                        <span class="material-icons-outlined text-3xl lg:text-4xl text-dark-green">rocket_launch</span>
-                        <h2 class="text-xl lg:text-2xl font-bold text-dark-green">Builder Brand Programme</h2>
-                    </div>
-                    <div class="flex flex-wrap gap-4">
-                        <a href="https://thenailtech.org/groups/brand-builder-incubator-1570503813/" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md flex-1 min-w-[calc(50%-0.5rem)] md:min-w-[calc(33.333%-0.67rem)]">
-                            <div class="flex flex-col items-center text-center text-white">
-                                <span class="material-icons-outlined text-4xl lg:text-5xl mb-3">groups</span>
-                                <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">BBP Community</h3>
-                                <p class="text-xs opacity-90">Connect with BBP members</p>
-                            </div>
-                        </a>
-                        <a href="https://thenailtech.org/groups/brand-builder-incubator-vip/" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md flex-1 min-w-[calc(50%-0.5rem)] md:min-w-[calc(33.333%-0.67rem)]" data-require-groups="348042" style="display: none;">
-                            <div class="flex flex-col items-center text-center text-white">
-                                <span class="material-icons-outlined text-4xl lg:text-5xl mb-3">workspace_premium</span>
-                                <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">VIP Community</h3>
-                                <p class="text-xs opacity-90">Exclusive VIP access</p>
-                            </div>
-                        </a>
-                        <a href="https://thenailtech.org/courses/brand-builder-incubator/" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md flex-1 min-w-[calc(50%-0.5rem)] md:min-w-[calc(33.333%-0.67rem)]">
-                            <div class="flex flex-col items-center text-center text-white">
-                                <span class="material-icons-outlined text-4xl lg:text-5xl mb-3">menu_book</span>
-                                <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">Course Materials</h3>
-                                <p class="text-xs opacity-90">Lessons & resources</p>
-                            </div>
-                        </a>
-                        <a href="https://thenailtech.org/lessons/call-schedule-links/" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md flex-1 min-w-[calc(50%-0.5rem)] md:min-w-[calc(33.333%-0.67rem)]">
-                            <div class="flex flex-col items-center text-center text-white">
-                                <span class="material-icons-outlined text-4xl lg:text-5xl mb-3">calendar_month</span>
-                                <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">Schedule</h3>
-                                <p class="text-xs opacity-90">View cohort sessions</p>
-                            </div>
-                        </a>
-                    </div>
-                </section>
+                <?php endif; ?>
 
                 <!-- Upgrade to Gold - Non-Members -->
-                <section data-exclude-groups="4383" style="display: none;">
+                <?php if (!$is_gold_member) : ?>
+                <section>
                     <div class="bg-gradient-to-br from-dark-green to-dark-green-light rounded-xl p-8 lg:p-12 shadow-xl text-white text-center relative overflow-hidden">
                         <!-- Decorative background pattern -->
                         <div class="absolute inset-0 opacity-10">
@@ -445,17 +475,19 @@ $rest_nonce = wp_create_nonce('wp_rest');
                                 </div>
                             </div>
 
-                            <a href="#" class="inline-flex items-center gap-2 bg-white text-dark-green font-bold py-3 px-8 rounded-full hover:bg-sand transition-all shadow-lg">
+                            <a href="https://thenailtech.org/members-club-membership/" class="inline-flex items-center gap-2 bg-white text-dark-green font-bold py-3 px-8 rounded-full hover:bg-sand transition-all shadow-lg">
                                 Become a Gold Member <span class="material-icons-outlined">arrow_forward</span>
                             </a>
                         </div>
                     </div>
                 </section>
+                <?php endif; ?>
 
             </div>
 
-            <!-- Right Sidebar (1/3 width on desktop) - Gold Members Only -->
-            <div class="lg:col-span-1 space-y-6" data-require-groups="4383" style="display: none;">
+            <!-- Right Sidebar (1/3 width on desktop) - Show for any group member -->
+            <?php if ($has_any_group) : ?>
+            <div class="lg:col-span-1 space-y-6">
 
                 <!-- Quick Start -->
                 <section>
@@ -495,6 +527,7 @@ $rest_nonce = wp_create_nonce('wp_rest');
                 </section>
 
             </div>
+            <?php endif; ?>
 
         </div>
 
@@ -502,23 +535,53 @@ $rest_nonce = wp_create_nonce('wp_rest');
 </div>
 
 <script>
-// Map LearnDash groups to BuddyBoss groups
+// ============================================
+// TEMPORARY TESTING FUNCTION - REMOVE AFTER TESTING
+// ============================================
+// Override groups for testing (server-side rendering)
+// Usage in browser console:
+//   testGroups([4383])              - Test as Gold member only
+//   testGroups([347879, 348042])    - Test as BBP + BBP VIP member
+//   testGroups([272088])            - Test as Educator member
+//   testGroups([])                  - Test as non-member
+//   testGroups()                    - Reset to actual groups
+// ============================================
+function testGroups(groups = null) {
+    const currentUrl = new URL(window.location.href);
+
+    if (groups === null) {
+        currentUrl.searchParams.delete('test_groups');
+        console.log('Testing disabled. Reloading with actual groups...');
+    } else {
+        currentUrl.searchParams.set('test_groups', groups.join(','));
+        console.log('🧪 Testing with groups:', groups, '- Reloading...');
+    }
+
+    window.location.href = currentUrl.toString();
+}
+
+<?php if ($is_testing) : ?>
+console.log('🧪 TESTING MODE: Simulating groups <?php echo json_encode($user_groups); ?>');
+<?php endif; ?>
+
+// Map LearnDash groups for JavaScript use
 const userGroups = <?php echo $user_groups_json; ?>;
-const adminHasFullAccess = <?php echo (current_user_can('administrator') && true) ? 'true' : 'false'; ?>; // Change the second 'true' to 'false' to disable
+const adminHasFullAccess = <?php echo $admin_bypass ? 'true' : 'false'; ?>;
 const communityFeeds = [];
 
 // Check which communities user has access to
+// General first (default feed)
 if (adminHasFullAccess || userGroups.includes(4383)) { // Gold Members
-    communityFeeds.push({ id: null, name: 'Gold Members', label: 'Gold' });
+    communityFeeds.push({ id: null, name: 'General', label: 'General' });
 }
-if (adminHasFullAccess || userGroups.includes(272088)) { // Educator Elevation
-    communityFeeds.push({ id: 65, name: 'Educator Elevation', label: 'Educator' });
+if (adminHasFullAccess || userGroups.includes(347879)) { // BBP
+    communityFeeds.push({ id: 67, name: 'BBP', label: 'BBP' });
 }
 if (adminHasFullAccess || userGroups.includes(348042)) { // BBP VIP
     communityFeeds.push({ id: 68, name: 'BBP VIP', label: 'BBP VIP' });
 }
-if (adminHasFullAccess || userGroups.includes(347879)) { // BBP
-    communityFeeds.push({ id: 67, name: 'BBP', label: 'BBP' });
+if (adminHasFullAccess || userGroups.includes(272088)) { // Educator Elevation
+    communityFeeds.push({ id: 65, name: 'Educator Elevation', label: 'Educator' });
 }
 
 let activeFeedIndex = 0;
@@ -542,6 +605,9 @@ async function loadCommunityFeed(groupId = null, containerId = 'community-feeds'
         });
 
         const activities = await response.json();
+
+        // Log response for debugging
+        console.log('BuddyBoss Activity Response:', activities);
 
         if (!activities || activities.length === 0) {
             feedContainer.innerHTML = '<p class="text-center text-gray-500 text-sm py-6">No recent activity</p>';
@@ -586,12 +652,25 @@ async function loadCommunityFeed(groupId = null, containerId = 'community-feeds'
             userName.className = 'font-bold text-dark-green font-montserrat text-sm truncate';
             userName.textContent = activity.name;
 
+            const timeAndGroup = document.createElement('div');
+            timeAndGroup.className = 'flex items-center gap-2';
+
             const timeSpan = document.createElement('span');
             timeSpan.className = 'text-xs text-gray-500';
             timeSpan.textContent = timeAgo;
+            timeAndGroup.appendChild(timeSpan);
+
+            // Add group tag if post is from a group
+            if (activity.activity_data && activity.activity_data.group_id && activity.activity_data.group_id > 0 && activity.activity_data.group_name) {
+                const groupTag = document.createElement('span');
+                groupTag.className = 'bg-dark-green text-white px-2 py-0.5 rounded-full font-semibold';
+                groupTag.style.fontSize = '9px';
+                groupTag.textContent = activity.activity_data.group_name;
+                timeAndGroup.appendChild(groupTag);
+            }
 
             infoInner.appendChild(userName);
-            infoInner.appendChild(timeSpan);
+            infoInner.appendChild(timeAndGroup);
             userInfo.appendChild(infoInner);
 
             header.appendChild(avatar);
@@ -602,24 +681,23 @@ async function loadCommunityFeed(groupId = null, containerId = 'community-feeds'
             if (activity.content_stripped || activity.content?.rendered) {
                 const content = document.createElement('div');
                 content.className = 'text-xs text-gray-700 mb-3 line-clamp-3';
-                content.textContent = activity.content_stripped || activity.content?.rendered?.replace(/<[^>]*>/g, '') || '';
+                // Clean up escaped characters
+                let contentText = activity.content_stripped || activity.content?.rendered?.replace(/<[^>]*>/g, '') || '';
+                contentText = contentText.replace(/\\'/g, "'").replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+                content.textContent = contentText;
                 postCard.appendChild(content);
             }
 
-            // Footer with likes, comments, and read more
+            // Footer with likes and comments
             const footer = document.createElement('div');
-            footer.className = 'flex items-center justify-between gap-3';
-
-            // Likes and comments count
-            const stats = document.createElement('div');
-            stats.className = 'flex items-center gap-3 text-gray-500';
+            footer.className = 'flex items-center gap-3 text-gray-500';
 
             // Likes
             if (activity.favorite_count && activity.favorite_count > 0) {
                 const likes = document.createElement('div');
                 likes.className = 'flex items-center gap-1 text-xs';
                 likes.innerHTML = `<span class="material-icons-outlined text-sm">favorite</span> ${activity.favorite_count}`;
-                stats.appendChild(likes);
+                footer.appendChild(likes);
             }
 
             // Comments
@@ -627,25 +705,34 @@ async function loadCommunityFeed(groupId = null, containerId = 'community-feeds'
                 const comments = document.createElement('div');
                 comments.className = 'flex items-center gap-1 text-xs';
                 comments.innerHTML = `<span class="material-icons-outlined text-sm">chat_bubble_outline</span> ${activity.comment_count}`;
-                stats.appendChild(comments);
+                footer.appendChild(comments);
             }
 
-            footer.appendChild(stats);
-
-            // Read more link
-            const link = document.createElement('a');
-            link.href = activity.link;
-            link.target = '_blank';
-            link.className = 'text-dark-green font-semibold hover:underline flex items-center gap-1 text-xs';
-            link.innerHTML = 'Read More <span class="material-icons-outlined text-sm">arrow_forward</span>';
-
-            footer.appendChild(link);
             postCard.appendChild(footer);
             postsContainer.appendChild(postCard);
         });
 
         feedContainer.innerHTML = '';
         feedContainer.appendChild(postsContainer);
+
+        // Add "View All Posts" button
+        const viewAllButton = document.createElement('a');
+
+        // Determine the correct URL based on groupId
+        let viewAllUrl = 'https://thenailtech.org/news-feed/'; // Default - General
+        if (groupId === 67) {
+            viewAllUrl = 'https://thenailtech.org/groups/brand-builder-programme/';
+        } else if (groupId === 68) {
+            viewAllUrl = 'https://thenailtech.org/groups/brand-builder-programme-vip/';
+        } else if (groupId === 65) {
+            viewAllUrl = 'https://thenailtech.org/groups/the-educator-elevation-september-2025/';
+        }
+
+        viewAllButton.href = viewAllUrl;
+        viewAllButton.className = 'mt-4 block text-center bg-dark-green text-white font-bold py-3 px-6 rounded-full hover:bg-dark-green-light transition-all shadow-md';
+        viewAllButton.innerHTML = 'View All Posts <span class="material-icons-outlined text-sm align-middle ml-1">arrow_forward</span>';
+
+        feedContainer.appendChild(viewAllButton);
 
     } catch (error) {
         console.error('Error loading community feed:', error);
@@ -765,8 +852,18 @@ function checkMondayUK() {
 
 // Check for live class events today
 async function checkLiveClass() {
-    // Show loader
+    // Check if elements exist (only available for Gold members)
+    const alertBox = document.getElementById('live-class-alert');
+    if (!alertBox) {
+        return; // User doesn't have access to this feature, exit early
+    }
+
+    const linkElement = document.getElementById('live-class-link');
+    const titleElement = document.getElementById('live-class-title');
+    const timeElement = document.getElementById('live-class-time');
     const loader = document.getElementById('live-class-loader');
+
+    // Show loader
     if (loader) loader.style.display = 'flex';
 
     try {
@@ -810,9 +907,6 @@ async function checkLiveClass() {
             const todayDateUK = nowUK.toLocaleDateString("en-US");
             const isSameDay = eventDateUK === todayDateUK;
 
-            const alertBox = document.getElementById('live-class-alert');
-            const linkElement = document.getElementById('live-class-link');
-
             if (isSameDay) {
                 // EVENT IS TODAY - Show with buttons based on state
                 if (nowUK < eventStartUK) {
@@ -820,8 +914,8 @@ async function checkLiveClass() {
                     const hours = eventStartUK.getHours();
                     const minutes = String(eventStartUK.getMinutes()).padStart(2, '0');
 
-                    document.getElementById('live-class-title').innerHTML = eventTitle;
-                    document.getElementById('live-class-time').textContent = `Starting at ${hours}:${minutes} (UK time)`;
+                    titleElement.innerHTML = eventTitle;
+                    timeElement.textContent = `Starting at ${hours}:${minutes} (UK time)`;
                     linkElement.innerHTML = 'Join Zoom <span class="material-icons-outlined text-lg">arrow_forward</span>';
                     linkElement.href = zoomLink;
                     linkElement.style.display = 'flex';
@@ -830,8 +924,8 @@ async function checkLiveClass() {
 
                 } else if (nowUK >= eventStartUK && nowUK <= eventEndUK) {
                     // DURING EVENT - Show "LIVE NOW" with pulsing indicator and Zoom link
-                    document.getElementById('live-class-title').innerHTML = `${eventTitle} <span class="inline-flex items-center ml-2 px-2 py-1 bg-red-600 text-white text-xs font-bold rounded-full animate-pulse">LIVE</span>`;
-                    document.getElementById('live-class-time').textContent = 'Happening now!';
+                    titleElement.innerHTML = `${eventTitle} <span class="inline-flex items-center ml-2 px-2 py-1 bg-red-600 text-white text-xs font-bold rounded-full animate-pulse">LIVE</span>`;
+                    timeElement.textContent = 'Happening now!';
                     linkElement.innerHTML = 'Join Now <span class="material-icons-outlined text-lg">arrow_forward</span>';
                     linkElement.href = zoomLink;
                     linkElement.style.display = 'flex';
@@ -841,8 +935,8 @@ async function checkLiveClass() {
                 } else {
                     // AFTER EVENT (same day) - Show replay if link exists
                     if (replayLink && replayLink.trim() !== '') {
-                        document.getElementById('live-class-title').innerHTML = eventTitle;
-                        document.getElementById('live-class-time').textContent = 'Replay available';
+                        titleElement.innerHTML = eventTitle;
+                        timeElement.textContent = 'Replay available';
                         linkElement.innerHTML = 'Watch Replay <span class="material-icons-outlined text-lg">play_arrow</span>';
                         linkElement.href = replayLink;
                         linkElement.style.display = 'flex';
@@ -866,8 +960,8 @@ async function checkLiveClass() {
                     hour12: false
                 });
 
-                document.getElementById('live-class-title').innerHTML = `Next Live Session: ${eventTitle}`;
-                document.getElementById('live-class-time').textContent = `${eventDateFormatted} at ${eventTime} (UK time)`;
+                titleElement.innerHTML = `Next Live Session: ${eventTitle}`;
+                timeElement.textContent = `${eventDateFormatted} at ${eventTime} (UK time)`;
                 linkElement.style.display = 'none'; // Hide button for future events
                 alertBox.classList.add('animate-fade-in-up');
                 alertBox.style.display = 'block';
@@ -882,75 +976,21 @@ async function checkLiveClass() {
     }
 }
 
-/**
- * Reusable LearnDash Group Access System
- *
- * To show/hide any element based on LearnDash group enrollment:
- * 1. Add data-require-groups="123" attribute (replace 123 with actual group ID)
- * 2. Add style="display: none;" to hide by default
- * 3. For multiple groups (OR logic), use: data-require-groups="123,456,789"
- * 4. To show content ONLY to non-members, use: data-exclude-groups="123"
- *
- * Example:
- * <div data-require-groups="123,456" style="display: none;">
- *   Content only visible to users in group 123 OR 456
- * </div>
- * <div data-exclude-groups="123" style="display: none;">
- *   Content only visible to users NOT in group 123
- * </div>
- */
-function checkGroupAccess() {
-    // Note: userGroups and adminHasFullAccess are already defined globally above
-
-    // Find all elements with data-require-groups attribute
-    const requireElements = document.querySelectorAll('[data-require-groups]');
-
-    requireElements.forEach(element => {
-        // Get required group IDs from data attribute (comma-separated)
-        const requiredGroups = element.getAttribute('data-require-groups')
-            .split(',')
-            .map(id => parseInt(id.trim()))
-            .filter(id => !isNaN(id));
-
-        // Check if user is in ANY of the required groups OR is admin with bypass enabled
-        const hasAccess = adminHasFullAccess || requiredGroups.some(groupId => userGroups.includes(groupId));
-
-        // Show element if user has access
-        if (hasAccess) {
-            // Get the computed display value or use 'block' as default
-            const displayValue = element.classList.contains('flex') || element.style.display === 'flex' ? 'flex' : 'block';
-            element.style.display = displayValue;
-        }
-    });
-
-    // Find all elements with data-exclude-groups attribute
-    const excludeElements = document.querySelectorAll('[data-exclude-groups]');
-
-    excludeElements.forEach(element => {
-        // Get excluded group IDs from data attribute (comma-separated)
-        const excludedGroups = element.getAttribute('data-exclude-groups')
-            .split(',')
-            .map(id => parseInt(id.trim()))
-            .filter(id => !isNaN(id));
-
-        // Check if user is NOT in ANY of the excluded groups (admins never see excluded content when bypass is on)
-        const hasAccess = adminHasFullAccess ? false : !excludedGroups.some(groupId => userGroups.includes(groupId));
-
-        // Show element if user is not in excluded groups
-        if (hasAccess) {
-            // Get the computed display value or use 'block' as default
-            const displayValue = element.classList.contains('flex') || element.style.display === 'flex' ? 'flex' : 'block';
-            element.style.display = displayValue;
-        }
-    });
-}
-
 // Load on page load
 initializeCommunityFeeds();
 checkMondayUK();
 checkLiveClass();
-checkGroupAccess();
 </script>
 
-<?php wp_footer(); ?>
-<?php get_footer(); ?>
+<!-- Hotjar Tracking Code for New Dashboard -->
+<script>
+    (function(h,o,t,j,a,r){
+        h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+        h._hjSettings={hjid:6549844,hjsv:6};
+        a=o.getElementsByTagName('head')[0];
+        r=o.createElement('script');r.async=1;
+        r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+        a.appendChild(r);
+    })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+</script>
+
