@@ -122,6 +122,70 @@ $rest_nonce = wp_create_nonce('wp_rest');
     .animate-fade-in-up {
         animation: fadeInUp 0.5s ease-out;
     }
+
+    #live-class-loader {
+        width: 100%;
+        justify-items: center;
+    }
+
+    #alerts {
+        flex-wrap: wrap;
+    }
+
+    /* Post content expand/collapse styles */
+    .post-content-wrapper {
+        position: relative;
+    }
+
+    .post-content-truncated {
+        position: relative;
+    }
+
+    .post-content-truncated::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2em;
+        background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 80%);
+        pointer-events: none;
+    }
+
+    .see-more-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        color: #0d2726;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        user-select: none;
+    }
+
+    .see-more-btn:active {
+        transform: scale(0.95);
+    }
+
+    .see-more-chevron {
+        font-size: 14px;
+        transition: transform 0.3s ease;
+    }
+
+    .see-more-chevron.expanded {
+        transform: rotate(180deg);
+    }
+
+    .post-content-expanded {
+        max-height: 2000px;
+        transition: max-height 0.3s ease-out;
+    }
+
+    .post-content-collapsed {
+        max-height: 4em;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+    }
 </style>
 
 <div class="nto-dashboard" style="background: #f6f1ea; min-height: 100vh;padding: 0px">
@@ -214,9 +278,25 @@ $rest_nonce = wp_create_nonce('wp_rest');
                         <p class="text-xs lg:text-sm text-gray-600">Share wins, learnings & changes</p>
                     </div>
                 </div>
-                <button class="w-full md:w-auto bg-dark-green text-white font-bold py-2 px-6 rounded-full hover:bg-sand transition-all flex items-center justify-center gap-2">
+                <a href="https://thenailtech.org/news-feed/" class="w-full md:w-auto bg-dark-green text-white font-bold py-2 px-6 rounded-full hover:bg-sand transition-all flex items-center justify-center gap-2">
                     Check In Now <span class="material-icons-outlined text-lg">arrow_forward</span>
-                </button>
+                </a>
+            </div>
+        </section>
+        <?php endif; ?>
+
+        <!-- Group-Restricted Event Alerts - Dynamic for all group members -->
+        <?php if ($has_any_group) : ?>
+        <section id="group-event-alerts" class="flex flex-col md:flex-row gap-3 lg:gap-4 mb-6" style="display: none;">
+            <div id="group-event-banner" class="flex-1 bg-white border-2 border-dark-green rounded-xl p-4 lg:p-6 shadow-md">
+                <div class="flex items-center gap-3 mb-3 lg:mb-4">
+                    <span class="material-icons-outlined text-4xl lg:text-5xl text-dark-green flex-shrink-0" id="group-event-icon">event</span>
+                    <div class="flex-1">
+                        <p id="group-event-title" class="font-bold text-base lg:text-lg text-dark-green font-montserrat"></p>
+                        <p id="group-event-time" class="text-xs lg:text-sm text-gray-600"></p>
+                    </div>
+                </div>
+                <a id="group-event-link" href="#" class="w-full md:w-auto bg-dark-green text-white font-bold py-2 px-6 rounded-full hover:bg-dark-green-light transition-all flex items-center justify-center gap-2" style="display: none;"></a>
             </div>
         </section>
         <?php endif; ?>
@@ -364,12 +444,12 @@ $rest_nonce = wp_create_nonce('wp_rest');
                 </section>
                 <?php endif; ?>
 
-                <!-- Builder Brand Programme Section - For BBP and BBP VIP members -->
+                <!-- Brand Builder Programme Section - For BBP and BBP VIP members -->
                 <?php if ($is_bbp || $is_bbp_vip) : ?>
                 <section id="bbp-section" class="bg-white rounded-xl p-5 lg:p-8 shadow-md">
                     <div class="flex items-center gap-3 mb-6">
                         <span class="material-icons-outlined text-3xl lg:text-4xl text-dark-green">rocket_launch</span>
-                        <h2 class="text-xl lg:text-2xl font-bold text-dark-green">Builder Brand Programme</h2>
+                        <h2 class="text-xl lg:text-2xl font-bold text-dark-green">Brand Builder Programme</h2>
                     </div>
                     <div class="flex flex-wrap gap-4">
                         <a href="https://thenailtech.org/groups/brand-builder-programme/" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md flex-1 min-w-[calc(50%-0.5rem)] md:min-w-[calc(33.333%-0.67rem)]">
@@ -398,7 +478,7 @@ $rest_nonce = wp_create_nonce('wp_rest');
                         <a href="https://thenailtech.org/lessons/call-schedule-links/" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md flex-1 min-w-[calc(50%-0.5rem)] md:min-w-[calc(33.333%-0.67rem)]">
                             <div class="flex flex-col items-center text-center text-white">
                                 <span class="material-icons-outlined text-4xl lg:text-5xl mb-3">calendar_month</span>
-                                <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">Schedule</h3>
+                                <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">Schedule & Replays</h3>
                                 <p class="text-xs opacity-90">View cohort sessions</p>
                             </div>
                         </a>
@@ -627,8 +707,7 @@ async function loadCommunityFeed(groupId = null, containerId = 'community-feeds'
         postsContainer.className = 'space-y-3';
 
         posts.forEach(activity => {
-            const date = new Date(activity.date);
-            const timeAgo = getTimeAgo(date);
+            const timeAgo = getTimeAgo(activity.date);
 
             // Create post card
             const postCard = document.createElement('div');
@@ -679,13 +758,63 @@ async function loadCommunityFeed(groupId = null, containerId = 'community-feeds'
 
             // Content section
             if (activity.content_stripped || activity.content?.rendered) {
+                const contentWrapper = document.createElement('div');
+                contentWrapper.className = 'mb-3 post-content-wrapper';
+
                 const content = document.createElement('div');
-                content.className = 'text-xs text-gray-700 mb-3 line-clamp-3';
+                content.className = 'text-xs text-gray-700 post-content-collapsed';
                 // Clean up escaped characters
                 let contentText = activity.content_stripped || activity.content?.rendered?.replace(/<[^>]*>/g, '') || '';
                 contentText = contentText.replace(/\\'/g, "'").replace(/\\"/g, '"').replace(/\\\\/g, '\\');
                 content.textContent = contentText;
-                postCard.appendChild(content);
+
+                // Check if content is long enough to truncate (approximately 3 lines = ~150 chars)
+                const needsTruncation = contentText.length > 150;
+
+                if (needsTruncation) {
+                    content.classList.add('post-content-truncated');
+
+                    // Create "See more" button
+                    const seeMoreBtn = document.createElement('div');
+                    seeMoreBtn.className = 'see-more-btn text-xs mt-1';
+                    seeMoreBtn.innerHTML = `
+                        See more
+                        <span class="material-icons-outlined see-more-chevron" style="font-size: 14px;">expand_more</span>
+                    `;
+
+                    // Add click handler to expand/collapse
+                    seeMoreBtn.addEventListener('click', function() {
+                        const chevron = this.querySelector('.see-more-chevron');
+
+                        if (content.classList.contains('post-content-collapsed')) {
+                            // Expand
+                            content.classList.remove('post-content-collapsed', 'post-content-truncated');
+                            content.classList.add('post-content-expanded');
+                            chevron.classList.add('expanded');
+                            this.innerHTML = `
+                                See less
+                                <span class="material-icons-outlined see-more-chevron expanded" style="font-size: 14px;">expand_more</span>
+                            `;
+                        } else {
+                            // Collapse
+                            content.classList.remove('post-content-expanded');
+                            content.classList.add('post-content-collapsed', 'post-content-truncated');
+                            chevron.classList.remove('expanded');
+                            this.innerHTML = `
+                                See more
+                                <span class="material-icons-outlined see-more-chevron" style="font-size: 14px;">expand_more</span>
+                            `;
+                        }
+                    });
+
+                    contentWrapper.appendChild(content);
+                    contentWrapper.appendChild(seeMoreBtn);
+                } else {
+                    // Short content, no truncation needed
+                    contentWrapper.appendChild(content);
+                }
+
+                postCard.appendChild(contentWrapper);
             }
 
             // Footer with likes and comments
@@ -803,7 +932,10 @@ function initializeCommunityFeeds() {
 }
 
 function getTimeAgo(date) {
-    const seconds = Math.floor((new Date() - date) / 1000);
+    // Parse the date string and add 'Z' to ensure it's treated as UTC
+    const utcDate = new Date(date + 'Z');
+    const now = new Date();
+    const seconds = Math.floor((now - utcDate) / 1000);
 
     const intervals = {
         year: 31536000,
@@ -874,18 +1006,34 @@ async function checkLiveClass() {
         const day = String(today.getDate()).padStart(2, '0');
         const todayDate = `${year}-${month}-${day}`;
 
-        // Fetch events for today and upcoming from The Events Calendar
-        const response = await fetch(`https://thenailtech.org/wp-json/tribe/events/v1/events?start_date=${todayDate}&per_page=10`);
+        // Fetch events for today and upcoming from The Events Calendar (including hidden events)
+        const response = await fetch(`https://thenailtech.org/wp-json/tribe/events/v1/events?start_date=${todayDate}&per_page=10&include_hidden=true`);
         const data = await response.json();
 
         // Check if there are any events
         if (data.events && data.events.length > 0) {
-            const event = data.events[0]; // Get the next/current event
+            // Find first event WITHOUT group restriction (available to all Gold members)
+            let event = null;
+            let wpEvent = null;
 
-            // Fetch custom fields from WordPress REST API
-            const eventId = event.id;
-            const wpResponse = await fetch(`https://thenailtech.org/wp-json/wp/v2/tribe_events/${eventId}`);
-            const wpEvent = await wpResponse.json();
+            for (const evt of data.events) {
+                const wpResponse = await fetch(`https://thenailtech.org/wp-json/wp/v2/tribe_events/${evt.id}`);
+                const wpData = await wpResponse.json();
+
+                // Only show events with NO group restriction
+                if (!wpData.event_group || wpData.event_group === '' || wpData.event_group === '0') {
+                    event = evt;
+                    wpEvent = wpData;
+                    break;
+                }
+            }
+
+            // If no unrestricted events found, hide banner
+            if (!event || !wpEvent) {
+                alertBox.style.display = 'none';
+                if (loader) loader.style.display = 'none';
+                return;
+            }
 
             // Extract event details
             const eventTitle = event.title || 'Live Class Today!';
@@ -976,10 +1124,169 @@ async function checkLiveClass() {
     }
 }
 
+// Check for group-restricted events
+async function checkGroupEvents() {
+    const alertSection = document.getElementById('group-event-alerts');
+    const alertBanner = document.getElementById('group-event-banner');
+
+    if (!alertSection || !alertBanner) return;
+
+    const userGroups = <?php echo $user_groups_json; ?>;
+    const titleElement = document.getElementById('group-event-title');
+    const timeElement = document.getElementById('group-event-time');
+    const linkElement = document.getElementById('group-event-link');
+    const iconElement = document.getElementById('group-event-icon');
+
+    try {
+        // Fetch events using WordPress REST API v2 (supports status parameter for hidden events)
+        const response = await fetch(`https://thenailtech.org/wp-json/wp/v2/tribe_events?status=publish,private&per_page=100&orderby=date&order=asc`, {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: {
+                'X-WP-Nonce': '<?php echo $rest_nonce; ?>'
+            }
+        });
+        const events = await response.json();
+
+        console.log('🔍 Group Events API Response (WP REST v2):', events);
+        console.log('📅 User Groups:', userGroups);
+
+        // Check if there are any events
+        if (events && events.length > 0) {
+            console.log(`✅ Found ${events.length} events total`);
+
+            // Find first event WITH group restriction that matches user's groups
+            for (const wpEvent of events) {
+                // Get event metadata (The Events Calendar stores dates in meta)
+                // Check if meta fields are arrays or direct values
+                const eventStartMeta = Array.isArray(wpEvent.meta?._EventStartDate)
+                    ? wpEvent.meta._EventStartDate[0]
+                    : wpEvent.meta?._EventStartDate;
+                const eventEndMeta = Array.isArray(wpEvent.meta?._EventEndDate)
+                    ? wpEvent.meta._EventEndDate[0]
+                    : wpEvent.meta?._EventEndDate;
+                const eventURL = Array.isArray(wpEvent.meta?._EventURL)
+                    ? wpEvent.meta._EventURL[0]
+                    : (wpEvent.meta?._EventURL || '#');
+
+                console.log(`📋 Event: "${wpEvent.title?.rendered}"`, {
+                    id: wpEvent.id,
+                    start_date: eventStartMeta,
+                    end_date: eventEndMeta,
+                    event_group: wpEvent.event_group,
+                    zoom_link: wpEvent.zoom_link,
+                    replay_link: wpEvent.replay_link
+                });
+
+                // Check if event has group restriction AND user belongs to that group
+                if (wpEvent.event_group && wpEvent.event_group !== '' && wpEvent.event_group !== '0') {
+                    const eventGroupId = parseInt(wpEvent.event_group);
+                    console.log(`🔒 Event has group restriction: ${eventGroupId}`);
+
+                    if (userGroups.includes(eventGroupId)) {
+                        console.log(`✨ MATCH! User belongs to group ${eventGroupId}`);
+
+                        // MATCH FOUND - Extract event details
+                        const eventTitle = wpEvent.title?.rendered || 'Live Session';
+                        const zoomLink = wpEvent.zoom_link || eventURL;
+                        const replayLink = wpEvent.replay_link || '';
+
+                        // Parse event start and end times from meta (stored in YYYY-MM-DD HH:mm:ss format in UK timezone)
+                        // The Events Calendar stores dates in UK timezone (e.g., "2025-10-27 10:00:00")
+                        // Parse as UTC then get components to display, no timezone conversion needed
+                        const [startDatePart, startTimePart] = eventStartMeta.split(' ');
+                        const [startYear, startMonth, startDay] = startDatePart.split('-');
+                        const [startHour, startMinute] = startTimePart.split(':');
+
+                        const [endDatePart, endTimePart] = eventEndMeta.split(' ');
+                        const [endYear, endMonth, endDay] = endDatePart.split('-');
+                        const [endHour, endMinute] = endTimePart.split(':');
+
+                        // Create date objects for comparison (treating stored time as local browser time for comparison)
+                        const eventStartUK = new Date(startYear, startMonth - 1, startDay, startHour, startMinute);
+                        const eventEndUK = new Date(endYear, endMonth - 1, endDay, endHour, endMinute);
+
+                        // Get current UK time for comparison
+                        const ukTimeString = new Date().toLocaleString("en-US", {timeZone: "Europe/London"});
+                        const nowUK = new Date(ukTimeString);
+
+                        // Check if event is same day as today
+                        const eventDateUK = eventStartUK.toLocaleDateString("en-US");
+                        const todayDateUK = nowUK.toLocaleDateString("en-US");
+                        const isSameDay = eventDateUK === todayDateUK;
+
+                        if (isSameDay) {
+                            // EVENT IS TODAY - Show with buttons based on state
+                            if (nowUK < eventStartUK) {
+                                // BEFORE EVENT - Show "Starting at [TIME]" with Zoom link
+                                // Use the parsed time directly (already in UK time)
+                                titleElement.innerHTML = eventTitle;
+                                timeElement.textContent = `Starting at ${startHour}:${startMinute} (UK time)`;
+                                linkElement.innerHTML = 'Join Zoom <span class="material-icons-outlined text-lg">arrow_forward</span>';
+                                linkElement.href = zoomLink;
+                                linkElement.style.display = 'flex';
+                                iconElement.textContent = 'event';
+                                alertSection.style.display = 'flex';
+                                return; // Stop after first match
+
+                            } else if (nowUK >= eventStartUK && nowUK <= eventEndUK) {
+                                // DURING EVENT - Show "LIVE NOW" with pulsing indicator and Zoom link
+                                titleElement.innerHTML = `${eventTitle} <span class="inline-flex items-center ml-2 px-2 py-1 bg-red-600 text-white text-xs font-bold rounded-full animate-pulse">LIVE</span>`;
+                                timeElement.textContent = 'Happening now!';
+                                linkElement.innerHTML = 'Join Now <span class="material-icons-outlined text-lg">arrow_forward</span>';
+                                linkElement.href = zoomLink;
+                                linkElement.style.display = 'flex';
+                                iconElement.textContent = 'live_tv';
+                                alertSection.style.display = 'flex';
+                                return; // Stop after first match
+
+                            } else {
+                                // AFTER EVENT (same day) - Show replay if link exists
+                                if (replayLink && replayLink.trim() !== '') {
+                                    titleElement.innerHTML = eventTitle;
+                                    timeElement.textContent = 'Replay available';
+                                    linkElement.innerHTML = 'Watch Replay <span class="material-icons-outlined text-lg">play_arrow</span>';
+                                    linkElement.href = replayLink;
+                                    linkElement.style.display = 'flex';
+                                    iconElement.textContent = 'play_circle';
+                                    alertSection.style.display = 'flex';
+                                    return; // Stop after first match
+                                }
+                            }
+                        } else {
+                            // EVENT IS IN THE FUTURE (not today) - Show as featured event
+                            const eventDateFormatted = eventStartUK.toLocaleDateString("en-GB", {
+                                weekday: 'long',
+                                day: 'numeric',
+                                month: 'long'
+                            });
+
+                            titleElement.innerHTML = `Next Session: ${eventTitle}`;
+                            timeElement.textContent = `${eventDateFormatted} at ${startHour}:${startMinute} (UK time)`;
+                            linkElement.style.display = 'none';
+                            iconElement.textContent = 'event';
+                            alertSection.style.display = 'flex';
+                            return; // Stop after first match
+                        }
+                    }
+                }
+            }
+        }
+
+        // No matching events found
+        alertSection.style.display = 'none';
+
+    } catch (error) {
+        console.error('Error checking group events:', error);
+        alertSection.style.display = 'none';
+    }
+}
+
 // Load on page load
 initializeCommunityFeeds();
 checkMondayUK();
 checkLiveClass();
+checkGroupEvents();
 </script>
 
 <!-- Hotjar Tracking Code for New Dashboard -->
