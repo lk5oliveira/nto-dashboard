@@ -1139,7 +1139,7 @@ async function checkGroupEvents() {
 
     try {
         // Fetch events using WordPress REST API v2 (supports status parameter for hidden events)
-        const response = await fetch(`https://thenailtech.org/wp-json/wp/v2/tribe_events?status=publish,private&per_page=100&orderby=date&order=asc`, {
+        const response = await fetch(`https://thenailtech.org/wp-json/wp/v2/tribe_events?status=publish&per_page=100&orderby=date&order=asc`, {
             method: 'GET',
             credentials: 'same-origin',
             headers: {

@@ -103,6 +103,23 @@ if (!defined('ABSPATH')) {
                             </p>
                         </td>
                     </tr>
+                    <tr>
+                        <th scope="row">
+                            <label for="nto-months-limit">Limit to Recent Posts</label>
+                        </th>
+                        <td>
+                            <input type="number"
+                                   id="nto-months-limit"
+                                   name="months_limit"
+                                   value="<?php echo esc_attr($months_limit); ?>"
+                                   min="0"
+                                   step="1"
+                                   class="regular-text" />
+                            <p class="description">
+                                Limit random selection to posts published within the last X months. Set to 0 to include all posts regardless of publish date.
+                            </p>
+                        </td>
+                    </tr>
                 </table>
 
                 <p class="submit">
@@ -193,6 +210,7 @@ jQuery(document).ready(function($) {
         const $button = $('#nto-save-settings');
         const $message = $('#nto-settings-message');
         const category = $('#nto-category-select').val();
+        const months_limit = $('#nto-months-limit').val();
 
         $button.prop('disabled', true).text('Saving...');
         $message.hide();
@@ -203,7 +221,8 @@ jQuery(document).ready(function($) {
             data: {
                 action: 'nto_save_settings',
                 nonce: '<?php echo wp_create_nonce('nto_save_settings'); ?>',
-                category: category
+                category: category,
+                months_limit: months_limit
             },
             success: function(response) {
                 if (response.success) {

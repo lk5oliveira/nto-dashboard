@@ -2,8 +2,8 @@
 /**
  * Plugin Name: NTO Daily Tutorial
  * Description: Automatically rotates a daily tutorial from LearnDash courses in the Tutorials category
- * Version: 1.0.1
- * Author: The Nail Tech Org
+ * Version: 1.1
+ * Author: NTO - Lucas Oliveira
  * Requires at least: 5.0
  * Requires PHP: 7.4
  */
@@ -109,6 +109,7 @@ class NTO_Daily_Tutorial {
 
         // Get settings
         $selected_category = get_option('nto_daily_tutorial_category', 'nail-tutorials');
+        $months_limit = get_option('nto_daily_tutorial_months_limit', 0);
 
         // Get all LearnDash course categories
         $categories = get_terms(array(
@@ -127,9 +128,10 @@ class NTO_Daily_Tutorial {
     public function rotate_tutorial() {
         // Get selected category from settings
         $selected_category = get_option('nto_daily_tutorial_category', 'nail-tutorials');
+        $months_limit = get_option('nto_daily_tutorial_months_limit', 0);
 
-        // Get all courses in the selected category
-        $courses = get_posts(array(
+        // Build query args
+        $query_args = array(
             'post_type' => 'sfwd-courses',
             'posts_per_page' => -1,
             'tax_query' => array(
@@ -139,7 +141,20 @@ class NTO_Daily_Tutorial {
                     'terms' => $selected_category
                 )
             )
-        ));
+        );
+
+        // Add date query if months limit is set
+        if ($months_limit > 0) {
+            $query_args['date_query'] = array(
+                array(
+                    'after' => $months_limit . ' months ago',
+                    'inclusive' => true
+                )
+            );
+        }
+
+        // Get all courses in the selected category
+        $courses = get_posts($query_args);
 
         if (empty($courses)) {
             return false;
@@ -236,6 +251,7 @@ class NTO_Daily_Tutorial {
         }
 
         $category = isset($_POST['category']) ? sanitize_text_field($_POST['category']) : '';
+        $months_limit = isset($_POST['months_limit']) ? intval($_POST['months_limit']) : 0;
 
         if (empty($category)) {
             wp_send_json_error('Category is required');
@@ -247,13 +263,20 @@ class NTO_Daily_Tutorial {
             wp_send_json_error('Invalid category');
         }
 
-        // Save setting
+        // Validate months limit
+        if ($months_limit < 0) {
+            $months_limit = 0;
+        }
+
+        // Save settings
         update_option('nto_daily_tutorial_category', $category);
+        update_option('nto_daily_tutorial_months_limit', $months_limit);
 
         wp_send_json_success(array(
             'message' => 'Settings saved successfully',
             'category' => $category,
-            'category_name' => $term->name
+            'category_name' => $term->name,
+            'months_limit' => $months_limit
         ));
     }
 }
