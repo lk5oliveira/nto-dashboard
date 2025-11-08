@@ -666,8 +666,14 @@ if (adminHasFullAccess || userGroups.includes(272088)) { // Educator Elevation
 
 let activeFeedIndex = 0;
 
-async function loadCommunityFeed(groupId = null, containerId = 'community-feeds') {
+async function loadCommunityFeed(groupId = null, containerId = 'community-feeds', showIndicator = false) {
     const feedContainer = document.getElementById(containerId);
+
+    // Add visual indicator for updates (subtle pulse)
+    if (showIndicator && feedContainer) {
+        feedContainer.style.transition = 'opacity 0.3s ease';
+        feedContainer.style.opacity = '0.6';
+    }
 
     try {
         // Build BuddyBoss REST API URL - request more items to ensure we get 5 activity_update posts after filtering
@@ -871,6 +877,13 @@ async function loadCommunityFeed(groupId = null, containerId = 'community-feeds'
                 <p class="text-gray-600 text-sm">Unable to load updates</p>
             </div>
         `;
+    } finally {
+        // Restore opacity after loading (with or without error)
+        if (showIndicator && feedContainer) {
+            setTimeout(() => {
+                feedContainer.style.opacity = '1';
+            }, 100);
+        }
     }
 }
 
@@ -1282,11 +1295,127 @@ async function checkGroupEvents() {
     }
 }
 
+// ============================================
+// POLLING MECHANISM FOR AJAX CONTENT
+// ============================================
+
+// Polling configuration
+const POLLING_CONFIG = {
+    communityPosts: {
+        interval: 60000, // 1 minute
+        enabled: true
+    },
+    liveSessions: {
+        interval: 120000, // 2 minutes
+        enabled: true
+    }
+};
+
+// Polling state management
+const pollingState = {
+    communityPostsTimer: null,
+    liveSessionsTimer: null,
+    isPageVisible: true,
+    lastCommunityUpdate: null,
+    lastLiveSessionUpdate: null
+};
+
+// Function to start polling for community posts
+function startCommunityPostsPolling() {
+    if (!POLLING_CONFIG.communityPosts.enabled) return;
+
+    // Clear existing timer if any
+    if (pollingState.communityPostsTimer) {
+        clearInterval(pollingState.communityPostsTimer);
+    }
+
+    // Set up polling interval
+    pollingState.communityPostsTimer = setInterval(() => {
+        // Only poll if page is visible
+        if (pollingState.isPageVisible && communityFeeds.length > 0) {
+            const currentFeed = communityFeeds[activeFeedIndex];
+            if (currentFeed) {
+                console.log('🔄 Polling community posts...');
+                loadCommunityFeed(currentFeed.id, 'community-feeds', true);
+            }
+        }
+    }, POLLING_CONFIG.communityPosts.interval);
+
+    console.log('✅ Community posts polling started (every ' + (POLLING_CONFIG.communityPosts.interval / 1000) + 's)');
+}
+
+// Function to start polling for live sessions
+function startLiveSessionsPolling() {
+    if (!POLLING_CONFIG.liveSessions.enabled) return;
+
+    // Clear existing timer if any
+    if (pollingState.liveSessionsTimer) {
+        clearInterval(pollingState.liveSessionsTimer);
+    }
+
+    // Set up polling interval
+    pollingState.liveSessionsTimer = setInterval(() => {
+        // Only poll if page is visible
+        if (pollingState.isPageVisible) {
+            console.log('🔄 Polling live sessions...');
+            checkLiveClass();
+            checkGroupEvents();
+        }
+    }, POLLING_CONFIG.liveSessions.interval);
+
+    console.log('✅ Live sessions polling started (every ' + (POLLING_CONFIG.liveSessions.interval / 1000) + 's)');
+}
+
+// Function to stop all polling
+function stopAllPolling() {
+    if (pollingState.communityPostsTimer) {
+        clearInterval(pollingState.communityPostsTimer);
+        pollingState.communityPostsTimer = null;
+    }
+    if (pollingState.liveSessionsTimer) {
+        clearInterval(pollingState.liveSessionsTimer);
+        pollingState.liveSessionsTimer = null;
+    }
+    console.log('⏸️ All polling stopped');
+}
+
+// Handle page visibility changes to pause/resume polling
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        pollingState.isPageVisible = false;
+        console.log('👁️ Page hidden - polling paused');
+    } else {
+        pollingState.isPageVisible = true;
+        console.log('👁️ Page visible - polling resumed');
+        // Immediately refresh content when page becomes visible again
+        if (communityFeeds.length > 0) {
+            const currentFeed = communityFeeds[activeFeedIndex];
+            if (currentFeed) {
+                loadCommunityFeed(currentFeed.id, 'community-feeds', true);
+            }
+        }
+        checkLiveClass();
+        checkGroupEvents();
+    }
+});
+
+// Clean up polling on page unload
+window.addEventListener('beforeunload', () => {
+    stopAllPolling();
+});
+
 // Load on page load
 initializeCommunityFeeds();
 checkMondayUK();
 checkLiveClass();
 checkGroupEvents();
+
+// Start polling after initial load
+setTimeout(() => {
+    startCommunityPostsPolling();
+    startLiveSessionsPolling();
+}, 2000); // Wait 2 seconds after page load before starting polling
+
 </script>
 
 <!-- Hotjar Tracking Code for New Dashboard -->
