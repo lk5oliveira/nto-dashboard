@@ -248,6 +248,35 @@ $rest_nonce = wp_create_nonce('wp_rest');
     .view-all-posts-btn:hover {
         background-color: #1a4544;
     }
+
+    /* Comments section styles */
+    .comments-section {
+        background-color: #f9fafb;
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+        margin-top: 0.75rem;
+    }
+
+    /* Cursor pointer helper */
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
+    /* Safari-compatible reply textarea styles */
+    .reply-textarea {
+        flex: 1;
+        font-size: 0.75rem !important;
+        padding: 0.5rem !important;
+        border: 1px solid #d1d5db !important;
+        border-radius: 0.5rem !important;
+        resize: none !important;
+        line-height: 1.25rem;
+    }
+
+    .reply-textarea:focus {
+        outline: 2px solid #0d2726;
+        outline-offset: 2px;
+    }
 </style>
 
 <div class="nto-dashboard" style="background: #f6f1ea; min-height: 100vh;padding: 0px">
@@ -661,6 +690,14 @@ $rest_nonce = wp_create_nonce('wp_rest');
                         <!-- Tabs will be generated dynamically -->
                     </div>
 
+                    <!-- Community Link -->
+                    <div id="community-link" class="mb-3" style="display: none;">
+                        <a href="#" target="_blank" class="text-xs text-gray-600 hover:text-dark-green transition-colors flex items-center gap-1">
+                            <span id="community-link-text">go to community</span>
+                            <span class="material-icons-outlined" style="font-size: 14px;">arrow_forward</span>
+                        </a>
+                    </div>
+
                     <!-- Feed containers -->
                     <div id="community-feeds">
                         <!-- Loading State -->
@@ -714,25 +751,239 @@ const userGroups = <?php echo $user_groups_json; ?>;
 const adminHasFullAccess = <?php echo $admin_bypass ? 'true' : 'false'; ?>;
 const communityFeeds = [];
 
+// Current user info for optimistic UI updates
+const currentUser = {
+    id: <?php echo $user_id; ?>,
+    name: '<?php echo esc_js($current_user->display_name); ?>',
+    avatar: '<?php echo esc_js(get_avatar_url($user_id, ['size' => 96])); ?>'
+};
+
+// ============================================
+// TEMPORARY TEST - REMOVE AFTER TESTING
+// ============================================
+const currentUserId = <?php echo $user_id; ?>;
+const isTestUser = currentUserId === 10882;
+// ============================================
+
 // Check which communities user has access to
 // General first (default feed)
 if (adminHasFullAccess || userGroups.includes(4383)) { // Gold Members
-    communityFeeds.push({ id: null, name: 'General', label: 'General' });
+    communityFeeds.push({ id: null, name: 'General', label: 'General', url: '/activity/' });
 }
 if (adminHasFullAccess || userGroups.includes(347879)) { // BBP
-    communityFeeds.push({ id: 67, name: 'BBP', label: 'BBP' });
+    communityFeeds.push({ id: 67, name: 'BBP', label: 'BBP', url: '/groups/business-building-programme/' });
 }
 if (adminHasFullAccess || userGroups.includes(348042)) { // BBP VIP
-    communityFeeds.push({ id: 68, name: 'BBP VIP', label: 'BBP VIP' });
+    communityFeeds.push({ id: 68, name: 'BBP VIP', label: 'BBP VIP', url: '/groups/business-building-programme-vip/' });
 }
 if (adminHasFullAccess || userGroups.includes(272088)) { // Educator Elevation
-    communityFeeds.push({ id: 65, name: 'Educator Elevation', label: 'Educator' });
+    communityFeeds.push({ id: 65, name: 'Educator Elevation', label: 'Educator', url: '/groups/educator-elevation/' });
 }
+
+// ============================================
+// TEMPORARY TEST - REMOVE AFTER TESTING
+// ============================================
+if (isTestUser) {
+    communityFeeds.push({ id: 69, name: 'Test Group', label: 'Test', url: '/groups/test-group/' });
+    console.log('🧪 TEST MODE: Added test group 69 for user 10882');
+}
+// ============================================
 
 let activeFeedIndex = 0;
 
+// State tracker for preserving UI state during polling
+const uiState = {
+    expandedPosts: new Set(),           // Posts with "see more" expanded
+    openCommentSections: new Set(),     // Posts with comments visible
+    openWriteSections: new Set(),       // Posts with write section visible
+    writeInputValues: new Map()         // Activity ID -> textarea value
+};
+
+// Helper function to decode HTML entities (including emojis)
+function decodeHtmlEntities(text) {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = text;
+    return textarea.value;
+}
+
+// Capture current UI state before reload
+function captureUIState() {
+    uiState.expandedPosts.clear();
+    uiState.openCommentSections.clear();
+    uiState.openWriteSections.clear();
+    uiState.writeInputValues.clear();
+
+    // Find all posts
+    const posts = document.querySelectorAll('.posts-container > div[class*="bg-white"]');
+
+    posts.forEach(postCard => {
+        // Try to find activity ID from any child element
+        const activityIdElement = postCard.querySelector('[data-activity-id]');
+        if (!activityIdElement) return;
+
+        const activityId = activityIdElement.getAttribute('data-activity-id');
+
+        // Check if content is expanded
+        const expandedContent = postCard.querySelector('.post-content-expanded');
+        if (expandedContent) {
+            uiState.expandedPosts.add(activityId);
+        }
+
+        // Check if comments section is open
+        const commentsSection = postCard.querySelector('.comments-section');
+        if (commentsSection && commentsSection.style.display !== 'none') {
+            console.log(`   📌 Saving open comment section for activity ${activityId}`);
+            uiState.openCommentSections.add(activityId);
+        }
+
+        // Check if write section is open and capture textarea value
+        const writeSection = postCard.querySelector('[data-reply-section]');
+        if (writeSection && writeSection.style.display !== 'none') {
+            uiState.openWriteSections.add(activityId);
+
+            // Capture any text in the textarea
+            const textarea = writeSection.querySelector('textarea');
+            if (textarea && textarea.value.trim()) {
+                uiState.writeInputValues.set(activityId, textarea.value);
+            }
+        }
+    });
+
+    console.log('📸 Captured UI state:', {
+        expanded: Array.from(uiState.expandedPosts),
+        comments: Array.from(uiState.openCommentSections),
+        write: Array.from(uiState.openWriteSections),
+        writeValues: Array.from(uiState.writeInputValues.keys())
+    });
+}
+
+// Restore UI state after reload
+async function restoreUIState() {
+    console.log('🔄 Restoring UI state...');
+    console.log('   States to restore:', {
+        expanded: Array.from(uiState.expandedPosts),
+        comments: Array.from(uiState.openCommentSections),
+        write: Array.from(uiState.openWriteSections)
+    });
+
+    const posts = document.querySelectorAll('.posts-container > div[class*="bg-white"]');
+    console.log(`   Found ${posts.length} posts in DOM`);
+
+    // Log all activity IDs found
+    const foundActivityIds = [];
+    posts.forEach(p => {
+        const el = p.querySelector('[data-activity-id]');
+        if (el) foundActivityIds.push(el.getAttribute('data-activity-id'));
+    });
+    console.log('   Activity IDs in DOM:', foundActivityIds);
+
+    for (const postCard of posts) {
+        const activityIdElement = postCard.querySelector('[data-activity-id]');
+        if (!activityIdElement) continue;
+
+        const activityId = activityIdElement.getAttribute('data-activity-id');
+
+        // Restore expanded content
+        if (uiState.expandedPosts.has(activityId)) {
+            // Try to find collapsed content first
+            let content = postCard.querySelector('.post-content-collapsed');
+            const seeMoreBtn = postCard.querySelector('.see-more-btn');
+
+            // If not collapsed, it might already be in its natural state (short content)
+            if (!content) {
+                content = postCard.querySelector('.post-content-expanded');
+            }
+
+            if (content && seeMoreBtn) {
+                content.classList.remove('post-content-collapsed', 'post-content-truncated');
+                content.classList.add('post-content-expanded');
+                const chevron = seeMoreBtn.querySelector('.see-more-chevron');
+                if (chevron) chevron.classList.add('expanded');
+                seeMoreBtn.innerHTML = `
+                    See less
+                    <span class="material-icons-outlined see-more-chevron expanded" style="font-size: 14px;">expand_more</span>
+                `;
+            }
+        }
+
+        // Restore open comment sections
+        if (uiState.openCommentSections.has(activityId)) {
+            console.log(`🔍 Restoring comments for activity ${activityId}`);
+
+            const commentsSection = postCard.querySelector(`.comments-section[data-activity-id="${activityId}"]`);
+            console.log('   Found commentsSection:', !!commentsSection);
+
+            if (commentsSection) {
+                console.log('   Opening comments section...');
+                commentsSection.style.display = 'block';
+
+                // Load comments if not already loaded
+                if (!commentsSection.hasAttribute('data-loaded')) {
+                    console.log('   Loading comments from API...');
+                    commentsSection.innerHTML = '<div class="text-center py-2 text-xs text-gray-500"><span class="material-icons-outlined text-sm animate-spin">refresh</span> Loading comments...</div>';
+                    await loadComments(activityId, commentsSection);
+                    commentsSection.setAttribute('data-loaded', 'true');
+                } else {
+                    console.log('   Comments already loaded');
+                }
+            } else {
+                console.log('   ❌ Comments section not found in DOM');
+            }
+        }
+
+        // Restore open write sections
+        if (uiState.openWriteSections.has(activityId)) {
+            const writeSection = postCard.querySelector(`[data-reply-section="${activityId}"]`);
+
+            if (writeSection) {
+                writeSection.style.display = 'block';
+
+                // Restore textarea value if it was captured
+                const textarea = writeSection.querySelector('textarea');
+                if (textarea && uiState.writeInputValues.has(activityId)) {
+                    textarea.value = uiState.writeInputValues.get(activityId);
+                    // Don't auto-focus to avoid disrupting user
+                    // But we can restore cursor position to the end
+                    textarea.selectionStart = textarea.selectionEnd = textarea.value.length;
+                }
+            }
+        }
+    }
+
+    console.log('✅ UI state restored');
+}
+
+// Update community link based on active feed
+function updateCommunityLink() {
+    const linkContainer = document.getElementById('community-link');
+    const linkText = document.getElementById('community-link-text');
+    const linkElement = linkContainer.querySelector('a');
+
+    if (communityFeeds.length > 0 && linkContainer && linkText && linkElement) {
+        const currentFeed = communityFeeds[activeFeedIndex];
+
+        // Update link text
+        if (currentFeed.name === 'General') {
+            linkText.textContent = 'go to community';
+        } else {
+            linkText.textContent = `go to ${currentFeed.name} group`;
+        }
+
+        // Update link URL
+        linkElement.href = currentFeed.url;
+
+        // Show the link
+        linkContainer.style.display = 'block';
+    }
+}
+
 async function loadCommunityFeed(groupId = null, containerId = 'community-feeds', showIndicator = false) {
     const feedContainer = document.getElementById(containerId);
+
+    // Capture current UI state before reload (during polling)
+    if (showIndicator) {
+        captureUIState();
+    }
 
     // Add visual indicator for updates (subtle pulse)
     if (showIndicator && feedContainer) {
@@ -836,6 +1087,8 @@ async function loadCommunityFeed(groupId = null, containerId = 'community-feeds'
                 // Clean up escaped characters
                 let contentText = activity.content_stripped || activity.content?.rendered?.replace(/<[^>]*>/g, '') || '';
                 contentText = contentText.replace(/\\'/g, "'").replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+                // Decode HTML entities (including emojis)
+                contentText = decodeHtmlEntities(contentText);
                 content.textContent = contentText;
 
                 // Check if content is long enough to truncate (approximately 3 lines = ~150 chars)
@@ -891,28 +1144,375 @@ async function loadCommunityFeed(groupId = null, containerId = 'community-feeds'
             const footer = document.createElement('div');
             footer.className = 'flex items-center gap-3 text-gray-500';
 
-            // Likes
-            if (activity.favorite_count && activity.favorite_count > 0) {
-                const likes = document.createElement('div');
-                likes.className = 'flex items-center gap-1 text-xs';
-                likes.innerHTML = `<span class="material-icons-outlined text-sm">favorite</span> ${activity.favorite_count}`;
-                footer.appendChild(likes);
+            // Likes - always show, clickable to like/unlike
+            const favoriteCount = activity.favorite_count || 0;
+            const isFavorited = activity.favorited || false;
+
+            const likesBtn = document.createElement('div');
+            likesBtn.className = 'flex items-center gap-1 text-xs cursor-pointer hover:text-red-500 transition-colors';
+            likesBtn.setAttribute('data-activity-id', activity.id);
+            likesBtn.setAttribute('data-favorited', isFavorited);
+            likesBtn.setAttribute('data-count', favoriteCount);
+
+            const likeIcon = document.createElement('span');
+            likeIcon.className = 'material-icons-outlined text-sm';
+            likeIcon.textContent = isFavorited ? 'favorite' : 'favorite_border';
+            if (isFavorited) {
+                likesBtn.style.color = '#ef4444'; // red-500
             }
 
-            // Comments
-            if (activity.comment_count && activity.comment_count > 0) {
-                const comments = document.createElement('div');
-                comments.className = 'flex items-center gap-1 text-xs';
-                comments.innerHTML = `<span class="material-icons-outlined text-sm">chat_bubble_outline</span> ${activity.comment_count}`;
-                footer.appendChild(comments);
+            const likeCount = document.createElement('span');
+            likeCount.textContent = favoriteCount;
+
+            likesBtn.appendChild(likeIcon);
+            likesBtn.appendChild(likeCount);
+
+            // Add click handler for like/unlike
+            likesBtn.addEventListener('click', async function(e) {
+                e.stopPropagation();
+                const activityId = this.getAttribute('data-activity-id');
+                const isFavorited = this.getAttribute('data-favorited') === 'true';
+                const currentCount = parseInt(this.getAttribute('data-count'));
+
+                const icon = this.querySelector('.material-icons-outlined');
+                const countSpan = this.querySelector('span:last-child');
+
+                // Optimistic UI update - update immediately
+                if (isFavorited) {
+                    // Optimistically unlike
+                    icon.textContent = 'favorite_border';
+                    this.style.color = '';
+                    const newCount = Math.max(0, currentCount - 1);
+                    countSpan.textContent = newCount;
+                    this.setAttribute('data-favorited', 'false');
+                    this.setAttribute('data-count', newCount);
+                } else {
+                    // Optimistically like
+                    icon.textContent = 'favorite';
+                    this.style.color = '#ef4444';
+                    const newCount = currentCount + 1;
+                    countSpan.textContent = newCount;
+                    this.setAttribute('data-favorited', 'true');
+                    this.setAttribute('data-count', newCount);
+                }
+
+                // Then update server in background
+                try {
+                    let response;
+                    if (isFavorited) {
+                        // Unlike - BuddyBoss uses POST with id parameter to toggle
+                        response = await fetch(`https://thenailtech.org/wp-json/buddyboss/v1/activity/${activityId}/favorite`, {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {
+                                'X-WP-Nonce': '<?php echo $rest_nonce; ?>',
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                id: activityId
+                            })
+                        });
+                    } else {
+                        // Like
+                        response = await fetch(`https://thenailtech.org/wp-json/buddyboss/v1/activity/${activityId}/favorite`, {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {
+                                'X-WP-Nonce': '<?php echo $rest_nonce; ?>',
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                id: activityId
+                            })
+                        });
+                    }
+
+                    if (!response.ok) {
+                        // Server failed - revert optimistic update
+                        console.error('Failed to toggle favorite on server');
+                        if (isFavorited) {
+                            // Revert back to liked
+                            icon.textContent = 'favorite';
+                            this.style.color = '#ef4444';
+                            countSpan.textContent = currentCount;
+                            this.setAttribute('data-favorited', 'true');
+                            this.setAttribute('data-count', currentCount);
+                        } else {
+                            // Revert back to unliked
+                            icon.textContent = 'favorite_border';
+                            this.style.color = '';
+                            countSpan.textContent = currentCount;
+                            this.setAttribute('data-favorited', 'false');
+                            this.setAttribute('data-count', currentCount);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error toggling favorite:', error);
+                    // Revert optimistic update on error
+                    if (isFavorited) {
+                        icon.textContent = 'favorite';
+                        this.style.color = '#ef4444';
+                        countSpan.textContent = currentCount;
+                        this.setAttribute('data-favorited', 'true');
+                        this.setAttribute('data-count', currentCount);
+                    } else {
+                        icon.textContent = 'favorite_border';
+                        this.style.color = '';
+                        countSpan.textContent = currentCount;
+                        this.setAttribute('data-favorited', 'false');
+                        this.setAttribute('data-count', currentCount);
+                    }
+                }
+            });
+
+            footer.appendChild(likesBtn);
+
+            // Comments - only clickable if count > 0
+            const commentsCount = activity.comment_count || 0;
+            const commentsBtn = document.createElement('div');
+
+            if (commentsCount > 0) {
+                commentsBtn.className = 'flex items-center gap-1 text-xs cursor-pointer hover:text-dark-green transition-colors';
+                commentsBtn.innerHTML = `<span class="material-icons-outlined text-sm">chat_bubble_outline</span> ${commentsCount}`;
+                commentsBtn.setAttribute('data-activity-id', activity.id);
+
+                // Create comments container (hidden by default)
+                const commentsContainer = document.createElement('div');
+                commentsContainer.className = 'comments-section';
+                commentsContainer.style.display = 'none';
+                commentsContainer.setAttribute('data-activity-id', activity.id);
+
+                // Add click handler to load comments
+                commentsBtn.addEventListener('click', async function(e) {
+                    e.stopPropagation();
+                    const activityId = this.getAttribute('data-activity-id');
+                    const container = postCard.querySelector(`.comments-section[data-activity-id="${activityId}"]`);
+
+                    // Toggle visibility
+                    if (container.style.display === 'none') {
+                        // Load comments if not already loaded
+                        if (!container.hasAttribute('data-loaded')) {
+                            container.innerHTML = '<div class="text-center py-2 text-xs text-gray-500"><span class="material-icons-outlined text-sm animate-spin">refresh</span> Loading comments...</div>';
+                            container.style.display = 'block';
+                            await loadComments(activityId, container);
+                            container.setAttribute('data-loaded', 'true');
+                        } else {
+                            container.style.display = 'block';
+                        }
+                    } else {
+                        container.style.display = 'none';
+                    }
+                });
+
+                footer.appendChild(commentsBtn);
+
+                // Add comments container after footer (will be added to postCard later)
+                postCard.commentsContainer = commentsContainer;
+            } else {
+                // Show non-clickable comment count
+                commentsBtn.className = 'flex items-center gap-1 text-xs text-gray-400';
+                commentsBtn.innerHTML = `<span class="material-icons-outlined text-sm">chat_bubble_outline</span> ${commentsCount}`;
+                footer.appendChild(commentsBtn);
             }
+
+            // Add "Write a comment..." button to footer
+            const writeCommentBtn = document.createElement('div');
+            writeCommentBtn.className = 'flex items-center gap-1 text-xs cursor-pointer hover:text-dark-green transition-colors';
+            writeCommentBtn.innerHTML = '<span class="material-icons-outlined text-sm">edit</span> Write';
+
+            // Add reply input section
+            const replySection = document.createElement('div');
+            replySection.className = 'mt-3 pt-3 border-t border-gray-200';
+            replySection.style.padding = '1rem 0rem';
+            replySection.style.display = 'none';
+            replySection.setAttribute('data-reply-section', activity.id);
+
+            const replyForm = document.createElement('div');
+            replyForm.className = 'flex gap-2';
+
+            const replyInput = document.createElement('textarea');
+            replyInput.className = 'reply-textarea';
+            replyInput.placeholder = 'Write a comment...';
+            replyInput.rows = 2;
+            replyInput.setAttribute('data-activity-id', activity.id);
+
+            const replyButton = document.createElement('button');
+            replyButton.className = 'px-4 py-2 bg-dark-green text-white text-xs font-semibold rounded-lg hover:bg-dark-green-light transition-colors';
+            replyButton.textContent = 'Post';
+            replyButton.setAttribute('data-activity-id', activity.id);
+
+            // Add click handler for reply button
+            replyButton.addEventListener('click', async function() {
+                const activityId = this.getAttribute('data-activity-id');
+                const textarea = replySection.querySelector('textarea');
+                const content = textarea.value.trim();
+
+                if (!content) {
+                    return;
+                }
+
+                // Disable button and show loading
+                this.disabled = true;
+                this.textContent = 'Posting...';
+
+                try {
+                    // Optimistically add the comment to UI
+                    const optimisticComment = {
+                        id: 'temp-' + Date.now(),
+                        name: currentUser.name,
+                        user_avatar: {
+                            thumb: currentUser.avatar,
+                            full: currentUser.avatar
+                        },
+                        date: new Date().toISOString(),
+                        content: {
+                            rendered: content
+                        }
+                    };
+
+                    // Clear textarea immediately
+                    textarea.value = '';
+
+                    // Find or create comments container
+                    let commentsContainer = postCard.querySelector(`.comments-section[data-activity-id="${activityId}"]`);
+
+                    if (!commentsContainer) {
+                        // Create comments container if it doesn't exist
+                        commentsContainer = document.createElement('div');
+                        commentsContainer.className = 'comments-section';
+                        commentsContainer.setAttribute('data-activity-id', activityId);
+                        commentsContainer.setAttribute('data-loaded', 'true');
+                        postCard.appendChild(commentsContainer);
+                    }
+
+                    // Show comments container
+                    commentsContainer.style.display = 'block';
+
+                    // If comments section is empty or has "no comments" message, initialize it
+                    if (!commentsContainer.querySelector('.mt-3.pt-3.border-t') || commentsContainer.textContent.includes('No comments')) {
+                        const commentsList = document.createElement('div');
+                        commentsList.className = 'mt-3 pt-3 border-t border-gray-200 space-y-3';
+                        commentsContainer.innerHTML = '';
+                        commentsContainer.appendChild(commentsList);
+                    }
+
+                    // Add the new comment to the list
+                    const commentsList = commentsContainer.querySelector('.mt-3.pt-3.border-t');
+                    const newCommentElement = renderComment(optimisticComment, 0);
+                    newCommentElement.style.opacity = '0.6'; // Show it's pending
+                    commentsList.appendChild(newCommentElement);
+
+                    // Update comment count in the button (need to find it within the postCard)
+                    const footerElement = postCard.querySelector('.flex.items-center.gap-3.text-gray-500');
+                    const commentsBtnInFooter = footerElement ? footerElement.querySelector(`div[data-activity-id="${activityId}"]`) : null;
+                    if (commentsBtnInFooter && commentsBtnInFooter.innerHTML.includes('chat_bubble_outline')) {
+                        const currentCount = parseInt(commentsBtnInFooter.textContent.trim()) || 0;
+                        const newCount = currentCount + 1;
+                        commentsBtnInFooter.innerHTML = `<span class="material-icons-outlined text-sm">chat_bubble_outline</span> ${newCount}`;
+
+                        // Make it clickable if it wasn't before
+                        if (currentCount === 0) {
+                            commentsBtnInFooter.className = 'flex items-center gap-1 text-xs cursor-pointer hover:text-dark-green transition-colors';
+
+                            // Add click handler since it was previously non-clickable
+                            commentsBtnInFooter.addEventListener('click', async function(e) {
+                                e.stopPropagation();
+                                const container = commentsContainer;
+
+                                // Toggle visibility
+                                if (container.style.display === 'none') {
+                                    container.style.display = 'block';
+                                } else {
+                                    container.style.display = 'none';
+                                }
+                            });
+                        }
+                    }
+
+                    // Post to server
+                    const response = await fetch(`https://thenailtech.org/wp-json/buddyboss/v1/activity/${activityId}/comment`, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'X-WP-Nonce': '<?php echo $rest_nonce; ?>',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            content: content
+                        })
+                    });
+
+                    if (response.ok) {
+                        // Remove opacity to show it's confirmed
+                        newCommentElement.style.opacity = '1';
+                    } else {
+                        // Remove the optimistic comment on error
+                        newCommentElement.remove();
+
+                        // Revert comment count
+                        if (commentsBtnInFooter && commentsBtnInFooter.innerHTML.includes('chat_bubble_outline')) {
+                            const currentCount = parseInt(commentsBtnInFooter.textContent.trim()) || 0;
+                            const revertedCount = Math.max(0, currentCount - 1);
+                            commentsBtnInFooter.innerHTML = `<span class="material-icons-outlined text-sm">chat_bubble_outline</span> ${revertedCount}`;
+
+                            if (revertedCount === 0) {
+                                commentsBtnInFooter.className = 'flex items-center gap-1 text-xs text-gray-400';
+                            }
+                        }
+
+                        const error = await response.json();
+                        console.error('Error posting comment:', error);
+                        alert('Failed to post comment. Please try again.');
+
+                        // Restore the text in textarea
+                        textarea.value = content;
+                    }
+                } catch (error) {
+                    console.error('Error posting comment:', error);
+                    alert('Failed to post comment. Please try again.');
+                    textarea.value = content; // Restore text on error
+                } finally {
+                    this.disabled = false;
+                    this.textContent = 'Post';
+                }
+            });
+
+            replyForm.appendChild(replyInput);
+            replyForm.appendChild(replyButton);
+            replySection.appendChild(replyForm);
+
+            writeCommentBtn.addEventListener('click', function() {
+                const section = postCard.querySelector(`[data-reply-section="${activity.id}"]`);
+                if (section.style.display === 'none') {
+                    section.style.display = 'block';
+                    const textarea = section.querySelector('textarea');
+                    textarea.focus();
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+            footer.appendChild(writeCommentBtn);
 
             postCard.appendChild(footer);
+            postCard.appendChild(replySection);
+
+            // Add comments container after reply section (if it exists)
+            if (postCard.commentsContainer) {
+                postCard.appendChild(postCard.commentsContainer);
+            }
+
             postsContainer.appendChild(postCard);
         });
 
         feedContainer.innerHTML = '';
         feedContainer.appendChild(postsContainer);
+
+        // Restore UI state after rendering (during polling)
+        // Use requestAnimationFrame to ensure DOM is fully rendered
+        if (showIndicator) {
+            await new Promise(resolve => requestAnimationFrame(resolve));
+            await restoreUIState();
+        }
 
         // Add "View All Posts" button
         const viewAllButton = document.createElement('a');
@@ -925,6 +1525,9 @@ async function loadCommunityFeed(groupId = null, containerId = 'community-feeds'
             viewAllUrl = 'https://thenailtech.org/groups/brand-builder-programme-vip/';
         } else if (groupId === 65) {
             viewAllUrl = 'https://thenailtech.org/groups/the-educator-elevation-september-2025/';
+        } else if (groupId === 69) {
+            // TEMPORARY TEST - REMOVE AFTER TESTING
+            viewAllUrl = 'https://thenailtech.org/groups/test-group/'; // Test group URL
         }
 
         viewAllButton.href = viewAllUrl;
@@ -965,6 +1568,9 @@ function switchFeed(index) {
         }
     });
 
+    // Update community link
+    updateCommunityLink();
+
     // Show loading state
     feedContainer.innerHTML = `
         <div class="bg-white rounded-xl p-6 shadow-md text-center">
@@ -1004,8 +1610,148 @@ function initializeCommunityFeeds() {
         `).join('');
     }
 
+    // Update community link for initial feed
+    updateCommunityLink();
+
     // Load first feed
     loadCommunityFeed(communityFeeds[0].id);
+}
+
+// Helper function to render a single comment (supports nested replies)
+function renderComment(comment, depth = 0) {
+    const commentDiv = document.createElement('div');
+    commentDiv.className = 'flex gap-2';
+
+    // Add left margin for nested replies
+    if (depth > 0) {
+        commentDiv.style.marginLeft = `${depth * 1.5}rem`;
+        commentDiv.style.borderLeft = '2px solid #e5e7eb';
+        commentDiv.style.paddingLeft = '0.5rem';
+    }
+
+    // Avatar
+    const commentAvatar = document.createElement('img');
+    commentAvatar.src = comment.user_avatar?.thumb || comment.user_avatar?.full || '';
+    commentAvatar.alt = comment.name;
+    commentAvatar.className = 'w-6 h-6 rounded-full object-cover flex-shrink-0';
+    commentAvatar.style.width = '1.5rem';
+    commentAvatar.style.height = '1.5rem';
+    commentAvatar.style.minWidth = '1.5rem';
+    commentAvatar.style.minHeight = '1.5rem';
+
+    // Comment content
+    const commentContent = document.createElement('div');
+    commentContent.className = 'flex-1 min-w-0';
+
+    const commentHeader = document.createElement('div');
+    commentHeader.className = 'flex items-center gap-2';
+
+    const commentAuthor = document.createElement('span');
+    commentAuthor.className = 'font-semibold text-xs text-dark-green';
+    commentAuthor.textContent = comment.name;
+
+    const commentTime = document.createElement('span');
+    commentTime.className = 'text-xs text-gray-500';
+    commentTime.textContent = getTimeAgo(comment.date);
+
+    commentHeader.appendChild(commentAuthor);
+    commentHeader.appendChild(commentTime);
+
+    const commentText = document.createElement('div');
+    commentText.className = 'text-xs text-gray-700 mt-1';
+    let commentTextContent = comment.content?.rendered?.replace(/<[^>]*>/g, '') || '';
+    commentTextContent = commentTextContent.replace(/\\'/g, "'").replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+    // Decode HTML entities (including emojis)
+    commentTextContent = decodeHtmlEntities(commentTextContent);
+    commentText.textContent = commentTextContent;
+
+    commentContent.appendChild(commentHeader);
+    commentContent.appendChild(commentText);
+
+    commentDiv.appendChild(commentAvatar);
+    commentDiv.appendChild(commentContent);
+
+    return commentDiv;
+}
+
+// Recursive function to render comments and their replies
+function renderCommentsTree(comments, parentElement, depth = 0) {
+    comments.forEach(comment => {
+        // Render the comment
+        const commentElement = renderComment(comment, depth);
+        parentElement.appendChild(commentElement);
+
+        // Check for replies/children and render them recursively
+        const replies = comment.children || comment.replies || [];
+        if (replies && replies.length > 0) {
+            renderCommentsTree(replies, parentElement, depth + 1);
+        }
+    });
+}
+
+// Load comments for an activity
+async function loadComments(activityId, container) {
+    try {
+        // Fetch comments with display_comments=threaded to get nested structure
+        const response = await fetch(`https://thenailtech.org/wp-json/buddyboss/v1/activity/${activityId}/comment?display_comments=threaded`, {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: {
+                'X-WP-Nonce': '<?php echo $rest_nonce; ?>'
+            }
+        });
+
+        const data = await response.json();
+        console.log('💬 Comments Response for activity', activityId, ':', data);
+
+        // Handle different response formats
+        let comments = [];
+        if (Array.isArray(data)) {
+            comments = data;
+        } else if (data && typeof data === 'object') {
+            // Check if comments are nested in a property
+            if (data.comments && Array.isArray(data.comments)) {
+                comments = data.comments;
+            } else if (data.data && Array.isArray(data.data)) {
+                comments = data.data;
+            } else {
+                console.error('Unexpected comments format:', data);
+                container.innerHTML = '<div class="text-center py-3 text-xs text-gray-500">No comments available</div>';
+                return;
+            }
+        }
+
+        if (!comments || comments.length === 0) {
+            container.innerHTML = '<div class="text-center py-3 text-xs text-gray-500">No comments yet</div>';
+            return;
+        }
+
+        // Debug: Log each comment structure
+        comments.forEach((comment, index) => {
+            console.log(`Comment ${index + 1} (ID: ${comment.id}):`, {
+                id: comment.id,
+                content: comment.content?.rendered?.substring(0, 50) + '...',
+                children: comment.children,
+                replies: comment.replies,
+                hasChildren: !!(comment.children && comment.children.length > 0),
+                hasReplies: !!(comment.replies && comment.replies.length > 0)
+            });
+        });
+
+        // Create comments list
+        const commentsList = document.createElement('div');
+        commentsList.className = 'mt-3 pt-3 border-t border-gray-200 space-y-3';
+
+        // Render comments tree (including nested replies)
+        renderCommentsTree(comments, commentsList);
+
+        container.innerHTML = '';
+        container.appendChild(commentsList);
+
+    } catch (error) {
+        console.error('Error loading comments:', error);
+        container.innerHTML = '<div class="text-center py-3 text-xs text-red-500">Error loading comments</div>';
+    }
 }
 
 function getTimeAgo(date) {
@@ -1368,11 +2114,11 @@ async function checkGroupEvents() {
 // Polling configuration
 const POLLING_CONFIG = {
     communityPosts: {
-        interval: 60000, // 1 minute
+        interval: 300000, // 5 minutes
         enabled: true
     },
     liveSessions: {
-        interval: 120000, // 2 minutes
+        interval: 600000, // 10 minutes
         enabled: true
     }
 };
@@ -1397,12 +2143,20 @@ function startCommunityPostsPolling() {
 
     // Set up polling interval
     pollingState.communityPostsTimer = setInterval(() => {
-        // Only poll if page is visible
+        // Only poll if page is visible and user is not actively typing
         if (pollingState.isPageVisible && communityFeeds.length > 0) {
-            const currentFeed = communityFeeds[activeFeedIndex];
-            if (currentFeed) {
-                console.log('🔄 Polling community posts...');
-                loadCommunityFeed(currentFeed.id, 'community-feeds', true);
+            // Don't reload if user is actively typing in a textarea or input
+            const activeElement = document.activeElement;
+            const isTyping = activeElement && (activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'INPUT');
+
+            if (!isTyping) {
+                const currentFeed = communityFeeds[activeFeedIndex];
+                if (currentFeed) {
+                    console.log('🔄 Polling community posts...');
+                    loadCommunityFeed(currentFeed.id, 'community-feeds', true);
+                }
+            } else {
+                console.log('⏸️ Skipping poll - user is typing');
             }
         }
     }, POLLING_CONFIG.communityPosts.interval);
