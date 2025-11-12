@@ -771,13 +771,13 @@ if (adminHasFullAccess || userGroups.includes(4383)) { // Gold Members
     communityFeeds.push({ id: null, name: 'General', label: 'General', url: '/activity/' });
 }
 if (adminHasFullAccess || userGroups.includes(347879)) { // BBP
-    communityFeeds.push({ id: 67, name: 'BBP', label: 'BBP', url: '/groups/business-building-programme/' });
+    communityFeeds.push({ id: 67, name: 'BBP', label: 'BBP', url: '/groups/brand-builder-programme/' });
 }
 if (adminHasFullAccess || userGroups.includes(348042)) { // BBP VIP
-    communityFeeds.push({ id: 68, name: 'BBP VIP', label: 'BBP VIP', url: '/groups/business-building-programme-vip/' });
+    communityFeeds.push({ id: 68, name: 'BBP VIP', label: 'BBP VIP', url: '/groups/brand-builder-programme-vip/' });
 }
 if (adminHasFullAccess || userGroups.includes(272088)) { // Educator Elevation
-    communityFeeds.push({ id: 65, name: 'Educator Elevation', label: 'Educator', url: '/groups/educator-elevation/' });
+    communityFeeds.push({ id: 65, name: 'Educator Elevation', label: 'Educator', url: '/groups/the-educator-elevation-september-2025/' });
 }
 
 // ============================================
