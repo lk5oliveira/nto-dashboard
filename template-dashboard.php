@@ -43,6 +43,19 @@ $rest_nonce = wp_create_nonce('wp_rest');
 
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<!-- Tailwind CSS CDN - Note: Using CDN for simplicity. For production, consider using a build process. -->
+<script>
+    // Suppress Tailwind CDN development warning
+    (function() {
+        const originalWarn = console.warn;
+        console.warn = function(...args) {
+            if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) {
+                return; // Suppress Tailwind CDN warning
+            }
+            originalWarn.apply(console, args);
+        };
+    })();
+</script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
     tailwind.config = {
@@ -185,6 +198,55 @@ $rest_nonce = wp_create_nonce('wp_rest');
         max-height: 4em;
         overflow: hidden;
         transition: max-height 0.3s ease-out;
+    }
+
+    /* Safari-compatible avatar and badge styles */
+    .avatar-image {
+        width: 2.5rem !important;
+        height: 2.5rem !important;
+        min-width: 2.5rem !important;
+        min-height: 2.5rem !important;
+        max-width: 2.5rem !important;
+        max-height: 2.5rem !important;
+        border-radius: 9999px;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+
+    .group-badge {
+        background-color: #0d2726;
+        color: white;
+        padding: 0.125rem 0.5rem !important;
+        border-radius: 9999px;
+        font-weight: 600;
+        font-size: 9px !important;
+        line-height: 1.5;
+    }
+
+    /* Posts container spacing */
+    .posts-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem; /* 12px spacing between posts */
+    }
+
+    /* View All Posts button spacing */
+    .view-all-posts-btn {
+        margin-top: 1rem !important; /* 16px spacing above button */
+        display: block;
+        text-align: center;
+        background-color: #0d2726;
+        color: white;
+        font-weight: bold;
+        padding: 0.75rem 1.5rem;
+        border-radius: 9999px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        text-decoration: none;
+    }
+
+    .view-all-posts-btn:hover {
+        background-color: #1a4544;
     }
 </style>
 
@@ -387,12 +449,15 @@ $rest_nonce = wp_create_nonce('wp_rest');
                         <?php endif; ?>
 
                         <!-- Business Programme -->
-                        <a href="https://thenailtech.org/business-programme/" class="bg-white rounded-xl p-5 lg:p-6 shadow-md hover:shadow-xl transition-all group border-2 border-transparent hover:border-dark-green">
+                        <a href="https://thenailtech.org/business-programme/" class="bg-white rounded-xl p-5 lg:p-6 shadow-md hover:shadow-xl transition-all group border-2 border-transparent hover:border-dark-green relative">
                             <div class="flex flex-col">
                                 <span class="material-icons-outlined text-4xl lg:text-5xl text-dark-green mb-3 group-hover:scale-110 transition-transform">business_center</span>
                                 <h3 class="font-bold text-sm lg:text-base mb-2 text-dark-green font-montserrat">Business Programme</h3>
                                 <p class="text-gray-600 text-xs lg:text-sm">Build & grow your business</p>
                             </div>
+                            <span class="absolute top-3 right-3 flex items-center justify-center w-6 h-6 bg-red-500 rounded-full">
+                                <span class="material-icons-outlined text-white" style="font-size: 14px;">notifications</span>
+                            </span>
                         </a>
 
                         <!-- Nail Tutorials -->
@@ -710,7 +775,7 @@ async function loadCommunityFeed(groupId = null, containerId = 'community-feeds'
 
         // Create container with posts
         const postsContainer = document.createElement('div');
-        postsContainer.className = 'space-y-3';
+        postsContainer.className = 'posts-container';
 
         posts.forEach(activity => {
             const timeAgo = getTimeAgo(activity.date);
@@ -726,7 +791,7 @@ async function loadCommunityFeed(groupId = null, containerId = 'community-feeds'
             const avatar = document.createElement('img');
             avatar.src = activity.user_avatar?.thumb || activity.user_avatar?.full || '';
             avatar.alt = activity.name;
-            avatar.className = 'w-10 h-10 rounded-full object-cover ring-2 ring-sand flex-shrink-0';
+            avatar.className = 'avatar-image ring-2 ring-sand';
 
             const userInfo = document.createElement('div');
             userInfo.className = 'flex-1 min-w-0';
@@ -748,8 +813,7 @@ async function loadCommunityFeed(groupId = null, containerId = 'community-feeds'
             // Add group tag if post is from a group
             if (activity.activity_data && activity.activity_data.group_id && activity.activity_data.group_id > 0 && activity.activity_data.group_name) {
                 const groupTag = document.createElement('span');
-                groupTag.className = 'bg-dark-green text-white px-2 py-0.5 rounded-full font-semibold';
-                groupTag.style.fontSize = '9px';
+                groupTag.className = 'group-badge';
                 groupTag.textContent = activity.activity_data.group_name;
                 timeAndGroup.appendChild(groupTag);
             }
@@ -864,7 +928,7 @@ async function loadCommunityFeed(groupId = null, containerId = 'community-feeds'
         }
 
         viewAllButton.href = viewAllUrl;
-        viewAllButton.className = 'mt-4 block text-center bg-dark-green text-white font-bold py-3 px-6 rounded-full hover:bg-dark-green-light transition-all shadow-md';
+        viewAllButton.className = 'view-all-posts-btn';
         viewAllButton.innerHTML = 'View All Posts <span class="material-icons-outlined text-sm align-middle ml-1">arrow_forward</span>';
 
         feedContainer.appendChild(viewAllButton);
@@ -996,7 +1060,7 @@ function checkMondayUK() {
 }
 
 // Check for live class events today
-async function checkLiveClass() {
+async function checkLiveClass(showLoader = true) {
     // Check if elements exist (only available for Gold members)
     const alertBox = document.getElementById('live-class-alert');
     if (!alertBox) {
@@ -1008,8 +1072,8 @@ async function checkLiveClass() {
     const timeElement = document.getElementById('live-class-time');
     const loader = document.getElementById('live-class-loader');
 
-    // Show loader
-    if (loader) loader.style.display = 'flex';
+    // Show loader only on initial load, not during polling
+    if (showLoader && loader) loader.style.display = 'flex';
 
     try {
         // Get today's date in YYYY-MM-DD format
@@ -1131,9 +1195,11 @@ async function checkLiveClass() {
     } catch (error) {
         console.error('Error checking for live class:', error);
     } finally {
-        // Hide loader when done
-        const loader = document.getElementById('live-class-loader');
-        if (loader) loader.style.display = 'none';
+        // Hide loader when done (only if it was shown)
+        if (showLoader) {
+            const loader = document.getElementById('live-class-loader');
+            if (loader) loader.style.display = 'none';
+        }
     }
 }
 
@@ -1358,7 +1424,7 @@ function startLiveSessionsPolling() {
         // Only poll if page is visible
         if (pollingState.isPageVisible) {
             console.log('🔄 Polling live sessions...');
-            checkLiveClass();
+            checkLiveClass(false); // Don't show loader during polling
             checkGroupEvents();
         }
     }, POLLING_CONFIG.liveSessions.interval);
@@ -1387,14 +1453,14 @@ document.addEventListener('visibilitychange', () => {
     } else {
         pollingState.isPageVisible = true;
         console.log('👁️ Page visible - polling resumed');
-        // Immediately refresh content when page becomes visible again
+        // Immediately refresh content when page becomes visible again (no loader)
         if (communityFeeds.length > 0) {
             const currentFeed = communityFeeds[activeFeedIndex];
             if (currentFeed) {
                 loadCommunityFeed(currentFeed.id, 'community-feeds', true);
             }
         }
-        checkLiveClass();
+        checkLiveClass(false); // Don't show loader when page becomes visible
         checkGroupEvents();
     }
 });
