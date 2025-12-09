@@ -993,7 +993,10 @@ function updateChristmasBanner() {
         // Check if current date is on or after this tutorial's date
         if (nowLondon >= tutorialDate) {
             currentTutorial = sortedTutorials[i];
-            christmasDayNumber = i + 1;
+            // Calculate day number based on Dec 2nd start date
+            const startDate = new Date('2025-12-02T00:00:00Z');
+            const diffTime = nowLondon - startDate;
+            christmasDayNumber = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
             // If we haven't reached the next tutorial date yet, this is the current one
             if (i < sortedTutorials.length - 1) {
