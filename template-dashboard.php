@@ -27,7 +27,8 @@ $is_gold_member = $admin_bypass || in_array(4383, $user_groups);
 $is_educator = $admin_bypass || in_array(272088, $user_groups);
 $is_bbp = $admin_bypass || in_array(347879, $user_groups);
 $is_bbp_vip = $admin_bypass || in_array(348042, $user_groups);
-$has_any_group = $is_gold_member || $is_educator || $is_bbp || $is_bbp_vip;
+$is_educator_diploma = $admin_bypass || in_array(352730, $user_groups);
+$has_any_group = $is_gold_member || $is_educator || $is_bbp || $is_bbp_vip || $is_educator_diploma;
 
 // Check for WP Fusion tag "07. Course - BBI - Bonuses"
 $has_bbi_bonuses = false;
@@ -401,6 +402,7 @@ $rest_nonce = wp_create_nonce('wp_rest');
     </div>
 
     <!-- 12 Days of Christmas Banner -->
+    <?php if ($is_gold_member) : ?>
     <div id="christmas-banner" class="max-w-7xl mx-auto pb-4" style="display: none;">
         <div class="bg-white rounded-xl p-4 lg:p-5 shadow-md border-2 border-sand relative overflow-hidden">
             <!-- Background Image Layer -->
@@ -456,6 +458,7 @@ $rest_nonce = wp_create_nonce('wp_rest');
             </div>
         </div>
     </div>
+    <?php endif; ?>
 
     <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8" style="padding:0px;padding-bottom: 2rem">
 
@@ -782,6 +785,39 @@ $rest_nonce = wp_create_nonce('wp_rest');
                 </section>
                 <?php endif; ?>
 
+                <!-- Educator Diploma Section - Conditional -->
+                <?php if ($is_educator_diploma) : ?>
+                <section id="educator-diploma" class="bg-white rounded-xl p-5 lg:p-8 shadow-md">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="material-icons-outlined text-3xl lg:text-4xl text-dark-green">school</span>
+                        <h2 class="text-xl lg:text-2xl font-bold text-dark-green">Educator Diploma</h2>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <a href="https://thenailtech.org/groups/educator-diploma/" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md">
+                            <div class="flex flex-col items-center text-center text-white">
+                                <span class="material-icons-outlined text-4xl lg:text-5xl mb-3">groups</span>
+                                <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">Community Hub</h3>
+                                <p class="text-xs opacity-90">Engage with cohort</p>
+                            </div>
+                        </a>
+                        <a href="https://thenailtech.org/courses/the-educator-elevation/" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md">
+                            <div class="flex flex-col items-center text-center text-white">
+                                <span class="material-icons-outlined text-4xl lg:text-5xl mb-3">menu_book</span>
+                                <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">Course Materials</h3>
+                                <p class="text-xs opacity-90">Lessons & resources</p>
+                            </div>
+                        </a>
+                        <a href="https://thenailtech.org/september-25-group-1-educators-course-schedule/" class="hidden group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md col-span-2 md:col-span-1">
+                            <div class="flex flex-col items-center text-center text-white">
+                                <span class="material-icons-outlined text-4xl lg:text-5xl mb-3">calendar_month</span>
+                                <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">Schedule</h3>
+                                <p class="text-xs opacity-90">View cohort sessions</p>
+                            </div>
+                        </a>
+                    </div>
+                </section>
+                <?php endif; ?>
+
                 <!-- Upgrade to Gold - Non-Members -->
                 <?php if (!$is_gold_member) : ?>
                 <section>
@@ -861,7 +897,7 @@ $rest_nonce = wp_create_nonce('wp_rest');
 
                     <!-- Community Link -->
                     <div id="community-link" class="mb-3" style="display: none;">
-                        <a href="#" target="_blank" class="text-xs text-gray-600 hover:text-dark-green transition-colors flex items-center gap-1">
+                        <a href="#" class="text-xs text-gray-600 hover:text-dark-green transition-colors flex items-center gap-1">
                             <span id="community-link-text">go to community</span>
                             <span class="material-icons-outlined" style="font-size: 14px;">arrow_forward</span>
                         </a>
@@ -902,7 +938,7 @@ const currentUser = {
 // Check which communities user has access to
 // General first (default feed)
 if (adminHasFullAccess || userGroups.includes(4383)) { // Gold Members
-    communityFeeds.push({ id: null, name: 'General', label: 'General', url: '/activity/' });
+    communityFeeds.push({ id: null, name: 'General', label: 'General', url: '/news-feed/' });
 }
 if (adminHasFullAccess || userGroups.includes(347879)) { // BBP
     communityFeeds.push({ id: 67, name: 'BBP', label: 'BBP', url: '/groups/brand-builder-programme/' });
@@ -912,6 +948,10 @@ if (adminHasFullAccess || userGroups.includes(348042)) { // BBP VIP
 }
 if (adminHasFullAccess || userGroups.includes(272088)) { // Educator Elevation
     communityFeeds.push({ id: 65, name: 'Educator Elevation', label: 'Educator', url: '/groups/the-educator-elevation-september-2025/' });
+}
+if (adminHasFullAccess || userGroups.includes(352730)) { // Educator Diploma
+    // Placeholder ID 999 - Needs actual BuddyBoss Group ID
+    communityFeeds.push({ id: 999, name: 'Educator Diploma', label: 'Educator', url: '/groups/educator-diploma/' });
 }
 
 let activeFeedIndex = 0;
@@ -1773,6 +1813,8 @@ async function loadCommunityFeed(groupId = null, containerId = 'community-feeds'
             viewAllUrl = 'https://thenailtech.org/groups/brand-builder-programme-vip/';
         } else if (groupId === 65) {
             viewAllUrl = 'https://thenailtech.org/groups/the-educator-elevation-september-2025/';
+        } else if (groupId === 999) {
+            viewAllUrl = 'https://thenailtech.org/groups/educator-diploma/';
         }
 
         viewAllButton.href = viewAllUrl;
