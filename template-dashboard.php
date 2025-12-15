@@ -1003,11 +1003,12 @@ const christmasTutorials = [
     },
     {
         author: 'The Nail Tech Org',
-        title: 'Christmas Coffee Coupons',
+        title: 'Coffee on NTO',
         category: 'Christmas Gift',
         link: 'https://thenailtech.org/christmas-coffee-coupons/',
         availableDate: new Date('2025-12-15T00:00:00Z'),
-        buttonText: 'Get Coupons'
+        buttonText: 'Get QR',
+        dayNumber: 11
     }
 ];
 
@@ -1041,10 +1042,14 @@ function updateChristmasBanner() {
         // Check if current date is on or after this tutorial's date
         if (nowLondon >= tutorialDate) {
             currentTutorial = sortedTutorials[i];
-            // Calculate day number based on Dec 2nd start date
-            const startDate = new Date('2025-12-02T00:00:00Z');
-            const diffTime = nowLondon - startDate;
-            christmasDayNumber = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            // Calculate day number (use explicit day if set, otherwise calc from Dec 2nd)
+            if (currentTutorial.dayNumber) {
+                christmasDayNumber = currentTutorial.dayNumber;
+            } else {
+                const startDate = new Date('2025-12-02T00:00:00Z');
+                const diffTime = nowLondon - startDate;
+                christmasDayNumber = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            }
 
             // If we haven't reached the next tutorial date yet, this is the current one
             if (i < sortedTutorials.length - 1) {
