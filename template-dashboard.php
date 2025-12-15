@@ -1000,6 +1000,14 @@ const christmasTutorials = [
         category: 'Nail Tutorial',
         link: 'https://thenailtech.org/lessons/gel-toe-nail-application-chloe-mae-boyce/',
         availableDate: new Date('2025-12-12T00:00:00Z')
+    },
+    {
+        author: 'The Nail Tech Org',
+        title: 'Christmas Coffee Coupons',
+        category: 'Christmas Gift',
+        link: 'https://thenailtech.org/christmas-coffee-coupons/',
+        availableDate: new Date('2025-12-15T00:00:00Z'),
+        buttonText: 'Get Coupons'
     }
 ];
 
@@ -1064,6 +1072,10 @@ function updateChristmasBanner() {
         tutorialTitle.textContent = currentTutorial.title;
         tutorialAuthor.textContent = `A ${currentTutorial.category} by ${currentTutorial.author}`;
         tutorialLink.href = currentTutorial.link;
+
+        // Update button text if provided
+        const btnText = currentTutorial.buttonText || 'View Tutorial';
+        tutorialLink.innerHTML = `${btnText} <span class="material-icons-outlined text-sm">arrow_forward</span>`;
 
         // Show the banner
         banner.style.display = 'block';
