@@ -143,65 +143,7 @@ $rest_nonce = wp_create_nonce('wp_rest');
         animation: fadeInUp 0.5s ease-out;
     }
 
-    /* Christmas Banner Background */
-    .christmas-bg-image {
-        position: absolute;
-        inset: 0;
-        background-image: url('https://nto-web-media.storage.googleapis.com/wp-content/uploads/2025/12/02170937/unnamed-2.jpg');
-        background-repeat: repeat-x;
-        background-size: auto 100%;
-        background-position: center;
-        opacity: 0.15;
-    }
 
-    .christmas-bg-gradient {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0) 100%);
-    }
-
-    /* Snow Animation */
-    @keyframes snowfall {
-        0% {
-            transform: translateY(-20px) translateX(0);
-            opacity: 1;
-        }
-        100% {
-            transform: translateY(140px) translateX(15px);
-            opacity: 1;
-        }
-    }
-
-    .christmas-snowflake {
-        position: absolute;
-        top: -20px;
-        color: rgba(255, 255, 255, 0.9);
-        font-size: 14px;
-        animation: snowfall linear infinite;
-        pointer-events: none;
-        z-index: 5;
-    }
-
-    .christmas-snowflake:nth-child(1) { left: 5%; animation-duration: 7s; animation-delay: 0s; }
-    .christmas-snowflake:nth-child(2) { left: 12%; animation-duration: 9s; animation-delay: 1s; font-size: 12px; }
-    .christmas-snowflake:nth-child(3) { left: 18%; animation-duration: 8s; animation-delay: 2s; }
-    .christmas-snowflake:nth-child(4) { left: 25%; animation-duration: 10s; animation-delay: 0.5s; font-size: 16px; }
-    .christmas-snowflake:nth-child(5) { left: 32%; animation-duration: 7.5s; animation-delay: 1.5s; }
-    .christmas-snowflake:nth-child(6) { left: 38%; animation-duration: 8.5s; animation-delay: 0s; font-size: 13px; }
-    .christmas-snowflake:nth-child(7) { left: 45%; animation-duration: 9.5s; animation-delay: 2.5s; }
-    .christmas-snowflake:nth-child(8) { left: 52%; animation-duration: 7s; animation-delay: 1s; font-size: 15px; }
-    .christmas-snowflake:nth-child(9) { left: 58%; animation-duration: 8s; animation-delay: 0.5s; }
-    .christmas-snowflake:nth-child(10) { left: 65%; animation-duration: 9s; animation-delay: 3s; font-size: 12px; }
-    .christmas-snowflake:nth-child(11) { left: 72%; animation-duration: 8.5s; animation-delay: 1.5s; font-size: 14px; }
-    .christmas-snowflake:nth-child(12) { left: 78%; animation-duration: 7.5s; animation-delay: 0.5s; }
-    .christmas-snowflake:nth-child(13) { left: 85%; animation-duration: 9s; animation-delay: 2s; font-size: 13px; }
-    .christmas-snowflake:nth-child(14) { left: 92%; animation-duration: 8s; animation-delay: 0s; font-size: 15px; }
-    .christmas-snowflake:nth-child(15) { left: 8%; animation-duration: 10s; animation-delay: 3s; }
-    .christmas-snowflake:nth-child(16) { left: 22%; animation-duration: 7.5s; animation-delay: 2.5s; font-size: 12px; }
-    .christmas-snowflake:nth-child(17) { left: 42%; animation-duration: 8.5s; animation-delay: 1s; font-size: 16px; }
-    .christmas-snowflake:nth-child(18) { left: 62%; animation-duration: 9s; animation-delay: 3.5s; }
-    .christmas-snowflake:nth-child(19) { left: 75%; animation-duration: 7s; animation-delay: 2s; font-size: 14px; }
-    .christmas-snowflake:nth-child(20) { left: 95%; animation-duration: 8.5s; animation-delay: 1.5s; font-size: 13px; }
 
     #live-class-loader {
         width: 100%;
@@ -346,8 +288,12 @@ $rest_nonce = wp_create_nonce('wp_rest');
     }
 </style>
 
-<div class="nto-dashboard" style="background: #f6f1ea; min-height: 100vh;padding: 0px">
-    <!-- Welcome Banner -->
+
+<div class="nto-dashboard" style="background: #f6f1ea; min-height: 100vh; padding-top: 3rem;">
+    <div class="sticky top-0 z-20 bg-dark-green-light text-white text-xs sm:text-sm text-center py-2 shadow-sm rounded-xl" style="margin: 0 -10px; width: calc(100% + 20px); box-sizing: border-box; padding-inline: 10px;">
+        Happy Holidays! During the Christmas and New Year period, our response time may be up to 48 hours. Thank you for your patience, and we wish you a wonderful festive season.
+    </div>
+<!-- Welcome Banner -->
     <div class="max-w-7xl mx-auto pt-6 pb-4">
         <div class="flex flex-col md:flex-row items-center md:items-start justify-between gap-4">
             <div class="text-center md:text-left">
@@ -401,64 +347,7 @@ $rest_nonce = wp_create_nonce('wp_rest');
         </div>
     </div>
 
-    <!-- 12 Days of Christmas Banner -->
-    <?php if ($is_gold_member) : ?>
-    <div id="christmas-banner" class="max-w-7xl mx-auto pb-4" style="display: none;">
-        <div class="bg-white rounded-xl p-4 lg:p-5 shadow-md border-2 border-sand relative overflow-hidden">
-            <!-- Background Image Layer -->
-            <div class="absolute inset-0 rounded-xl overflow-hidden">
-                <div class="christmas-bg-image"></div>
-                <!-- Snowflakes -->
-                <div class="christmas-snowflake">❄</div>
-                <div class="christmas-snowflake">❄</div>
-                <div class="christmas-snowflake">❄</div>
-                <div class="christmas-snowflake">❄</div>
-                <div class="christmas-snowflake">❄</div>
-                <div class="christmas-snowflake">❄</div>
-                <div class="christmas-snowflake">❄</div>
-                <div class="christmas-snowflake">❄</div>
-                <div class="christmas-snowflake">❄</div>
-                <div class="christmas-snowflake">❄</div>
-                <div class="christmas-snowflake">❄</div>
-                <div class="christmas-snowflake">❄</div>
-                <div class="christmas-snowflake">❄</div>
-                <div class="christmas-snowflake">❄</div>
-                <div class="christmas-snowflake">❄</div>
-                <div class="christmas-snowflake">❄</div>
-                <div class="christmas-snowflake">❄</div>
-                <div class="christmas-snowflake">❄</div>
-                <div class="christmas-snowflake">❄</div>
-                <div class="christmas-snowflake">❄</div>
-                <div class="christmas-bg-gradient"></div>
-            </div>
 
-            <!-- Content Layer -->
-            <div class="relative z-10">
-                <div class="flex items-center gap-3 mb-3">
-                    <span class="text-2xl">🎄</span>
-                    <div class="flex-1">
-                        <h2 id="christmas-day-title" class="font-bold text-sm lg:text-base text-dark-green font-montserrat">
-                            ON THE FIRST DAY OF CHRISTMAS, NTO GAVE TO ME...
-                        </h2>
-                    </div>
-                </div>
-                <div class="flex items-center justify-between gap-3">
-                    <div class="flex-1">
-                        <h3 id="christmas-tutorial-title" class="font-bold text-xs lg:text-sm text-dark-green mb-1">
-                            <!-- Tutorial title will be inserted here -->
-                        </h3>
-                        <p id="christmas-tutorial-author" class="text-xs text-gray-600">
-                            <!-- Author info will be inserted here -->
-                        </p>
-                    </div>
-                    <a id="christmas-tutorial-link" href="#" class="inline-flex items-center gap-2 bg-dark-green text-white font-bold py-2 px-4 rounded-full hover:bg-dark-green-light transition-all text-xs flex-shrink-0">
-                        View Tutorial <span class="material-icons-outlined text-sm">arrow_forward</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    <?php endif; ?>
 
     <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8" style="padding:0px;padding-bottom: 2rem">
 
@@ -807,11 +696,18 @@ $rest_nonce = wp_create_nonce('wp_rest');
                                 <p class="text-xs opacity-90">Lessons & resources</p>
                             </div>
                         </a>
-                        <a href="https://thenailtech.org/september-25-group-1-educators-course-schedule/" class="hidden group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md col-span-2 md:col-span-1">
+                        <a href="https://thenailtech.org/educator-diploma-schedule-calls/" class="group bg-dark-green hover:bg-dark-green-light rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md">
                             <div class="flex flex-col items-center text-center text-white">
                                 <span class="material-icons-outlined text-4xl lg:text-5xl mb-3">calendar_month</span>
                                 <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">Schedule</h3>
                                 <p class="text-xs opacity-90">View cohort sessions</p>
+                            </div>
+                        </a>
+                        <a href="https://nto-web-media.storage.googleapis.com/wp-content/uploads/2025/12/26133523/Educator-Masterclass-Workbook.pdf" target="_blank" class="group bg-white border-2 border-dark-green hover:bg-sand rounded-xl p-5 lg:p-6 transition-all transform hover:scale-105 shadow-md">
+                            <div class="flex flex-col items-center text-center text-dark-green">
+                                <span class="material-icons-outlined text-4xl lg:text-5xl mb-3 group-hover:scale-110 transition-transform">import_contacts</span>
+                                <h3 class="font-bold text-sm lg:text-base mb-1 font-montserrat">Workbook</h3>
+                                <p class="text-xs text-gray-600">Download PDF</p>
                             </div>
                         </a>
                     </div>
@@ -956,145 +852,7 @@ if (adminHasFullAccess || userGroups.includes(352730)) { // Educator Diploma
 
 let activeFeedIndex = 0;
 
-// ============= 12 Days of Christmas Banner =============
-// Christmas tutorials data with availability dates
-const christmasTutorials = [
-    {
-        author: 'Amy Lou',
-        title: 'Male Manicure',
-        category: 'Nail Tutorial',
-        link: 'https://thenailtech.org/lessons/male-manicure-amy-lou/',
-        availableDate: new Date('2025-12-03T00:00:00Z')
-    },
-    {
-        author: 'Charlotte Fulcher',
-        title: 'Day in the Life Reel',
-        category: 'Social Media tutorial',
-        link: 'https://thenailtech.org/lessons/how-to-create-a-day-in-the-life-reel-beginner-friendly-awkward-proof-charlotte-fulcher/',
-        availableDate: new Date('2025-12-04T00:00:00Z')
-    },
-    {
-        author: 'Suzanne Daggers',
-        title: 'Growing Authentically',
-        category: 'Social Media tutorial',
-        link: 'https://thenailtech.org/lessons/growing-authentically-online-suzanne-daggers/',
-        availableDate: new Date('2025-12-05T00:00:00Z')
-    },
-    {
-        author: 'Alex Philamond',
-        title: 'Antique Cat Eye',
-        category: 'Nail Tutorial',
-        link: 'https://thenailtech.org/lessons/antique-cat-eye-chrome-isolation-alex-philamond/',
-        availableDate: new Date('2025-12-09T00:00:00Z')
-    },
-    {
-        author: 'Chelsea Lou',
-        title: 'Nail Prep',
-        category: 'Nail Tutorial',
-        link: 'https://thenailtech.org/lessons/nail-prep-chelsea-lou/',
-        availableDate: new Date('2025-12-11T00:00:00Z')
-    },
-    {
-        author: 'Chloe-Mae Boyce',
-        title: 'Gel Toe Application',
-        category: 'Nail Tutorial',
-        link: 'https://thenailtech.org/lessons/gel-toe-nail-application-chloe-mae-boyce/',
-        availableDate: new Date('2025-12-12T00:00:00Z')
-    },
-    {
-        author: 'The Nail Tech Org',
-        title: 'Coffee on NTO',
-        category: 'Christmas Gift',
-        link: 'https://thenailtech.org/christmas-coffee-coupons/',
-        availableDate: new Date('2025-12-15T00:00:00Z'),
-        buttonText: 'Get QR',
-        dayNumber: 11
-    }
-];
 
-// Helper function to get ordinal suffix (1st, 2nd, 3rd, etc.)
-function getOrdinalSuffix(num) {
-    const j = num % 10;
-    const k = num % 100;
-    if (j === 1 && k !== 11) return num + 'st';
-    if (j === 2 && k !== 12) return num + 'nd';
-    if (j === 3 && k !== 13) return num + 'rd';
-    return num + 'th';
-}
-
-// Function to update Christmas banner
-function updateChristmasBanner() {
-    const banner = document.getElementById('christmas-banner');
-    if (!banner) return;
-
-    // Get current date in London time
-    const nowLondon = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/London' }));
-
-    let currentTutorial = null;
-    let christmasDayNumber = 0;
-
-    // Find current tutorial based on date
-    const sortedTutorials = [...christmasTutorials].sort((a, b) => a.availableDate - b.availableDate);
-
-    for (let i = 0; i < sortedTutorials.length; i++) {
-        const tutorialDate = new Date(sortedTutorials[i].availableDate);
-
-        // Check if current date is on or after this tutorial's date
-        if (nowLondon >= tutorialDate) {
-            currentTutorial = sortedTutorials[i];
-            // Calculate day number (use explicit day if set, otherwise calc from Dec 2nd)
-            if (currentTutorial.dayNumber) {
-                christmasDayNumber = currentTutorial.dayNumber;
-            } else {
-                const startDate = new Date('2025-12-02T00:00:00Z');
-                const diffTime = nowLondon - startDate;
-                christmasDayNumber = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-            }
-
-            // If we haven't reached the next tutorial date yet, this is the current one
-            if (i < sortedTutorials.length - 1) {
-                const nextTutorialDate = new Date(sortedTutorials[i + 1].availableDate);
-                if (nowLondon < nextTutorialDate) {
-                    break; // Found the current tutorial
-                }
-            } else {
-                break; // This is the last tutorial
-            }
-        }
-    }
-
-    // If we found a tutorial to display
-    if (currentTutorial) {
-        // Update banner content
-        const dayTitle = document.getElementById('christmas-day-title');
-        const tutorialTitle = document.getElementById('christmas-tutorial-title');
-        const tutorialAuthor = document.getElementById('christmas-tutorial-author');
-        const tutorialLink = document.getElementById('christmas-tutorial-link');
-
-        const ordinalDay = getOrdinalSuffix(christmasDayNumber).toUpperCase();
-
-        dayTitle.textContent = `ON THE ${ordinalDay} DAY OF CHRISTMAS, NTO GAVE TO ME...`;
-        tutorialTitle.textContent = currentTutorial.title;
-        tutorialAuthor.textContent = `A ${currentTutorial.category} by ${currentTutorial.author}`;
-        tutorialLink.href = currentTutorial.link;
-
-        // Update button text if provided
-        const btnText = currentTutorial.buttonText || 'View Tutorial';
-        tutorialLink.innerHTML = `${btnText} <span class="material-icons-outlined text-sm">arrow_forward</span>`;
-
-        // Show the banner
-        banner.style.display = 'block';
-    } else {
-        // Hide banner if no tutorial is available
-        banner.style.display = 'none';
-    }
-}
-
-// Initialize Christmas banner on page load
-document.addEventListener('DOMContentLoaded', function() {
-    updateChristmasBanner();
-});
-// ============= End 12 Days of Christmas Banner =============
 
 // State tracker for preserving UI state during polling
 const uiState = {
